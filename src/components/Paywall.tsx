@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { OfferCountdown, useOfferCountdown } from "@/components/OfferCountdown";
 import { createCheckoutSession } from "@/lib/billing.functions";
-import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
+import { LIFETIME_PRICE_USD, STANDARD_PRICE_USD } from "@/lib/canvas";
 
-type Plan = "yearly" | "lifetime";
+type Plan = "standard" | "lifetime";
 
 export function UpgradeButton({
   label = "Upgrade to continue",
-  plan = "yearly",
+  plan = "standard",
   variant = "default",
 }: {
   label?: string;
