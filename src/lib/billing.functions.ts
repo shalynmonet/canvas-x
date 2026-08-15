@@ -34,7 +34,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     z
       .object({
         origin: z.string().url(),
-        plan: z.enum(["yearly", "lifetime"]).default("yearly"),
+        plan: z.enum(["standard", "lifetime"]).default("standard"),
       })
       .parse(input),
   )
