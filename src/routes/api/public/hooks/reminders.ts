@@ -115,6 +115,11 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
         for (const profile of (profiles ?? []) as ProfileRow[]) {
           if (!profile.reminder_time || !profile.phone) continue;
+
+          const tz = profile.timezone || "UTC";
+          const local = localTimeComponents(now, tz);
+          const nowMinutes = local.hours * 60 + local.minutes;
+          const today = local.date;
           const target = minutesOfDay(profile.reminder_time);
           if (Math.abs(nowMinutes - target) > 15) continue;
 
@@ -134,11 +139,15 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
           const { data: alreadySent } = await db
             .from("reminder_logs")
-            .select("id")
+            .select("id, sent_at")
             .eq("user_id", profile.id)
-            .gte("sent_at", `${today}T00:00:00Z`)
+            .order("sent_at", { ascending: false })
             .limit(1);
-          if ((alreadySent ?? []).length > 0) {
+          const sentToday = (alreadySent ?? []).some((log) => {
+            const sentLocal = localTimeComponents(new Date(log.sent_at), tz);
+            return sentLocal.date === today;
+          });
+          if (sentToday) {
             skipped += 1;
             continue;
           }
