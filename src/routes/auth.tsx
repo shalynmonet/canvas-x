@@ -120,23 +120,23 @@ function AuthPage() {
 
   if (checkEmail) {
     return (
-      <div className="mx-auto max-w-sm px-4 py-20 text-center">
+      <main className="mx-auto max-w-sm px-4 py-20 text-center">
         <h1 className="text-2xl font-bold">Confirm your email</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           We sent a confirmation link to {values.email}. Open it and {isLifetime
             ? "we’ll take you straight to the $1 lifetime checkout."
             : "your 7-day free trial starts right away."}
         </p>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-12">
+    <main className="mx-auto max-w-sm px-4 py-8">
       <Link to="/" className="font-display text-lg font-bold">
         CanvasX
       </Link>
-      <h1 className="mt-8 text-3xl font-bold">
+      <h1 className="mt-6 text-3xl font-bold">
         {mode === "signup"
           ? isLifetime
             ? "Claim $1 lifetime access"
@@ -151,7 +151,7 @@ function AuthPage() {
           : "Pick up today's checklist where you left off."}
       </p>
 
-      <form onSubmit={submit} className="mt-8 space-y-4">
+      <form onSubmit={submit} className="mt-6 space-y-4">
         {mode === "signup" && (
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -233,11 +233,11 @@ function AuthPage() {
       </form>
 
       <button
-        className="mt-6 w-full text-center text-sm text-muted-foreground underline"
+        className="mt-4 w-full text-center text-sm text-muted-foreground underline"
         onClick={() => setMode(mode === "signup" ? "login" : "signup")}
       >
         {mode === "signup" ? "I already have an account" : "Create an account instead"}
       </button>
-    </div>
+    </main>
   );
 }
