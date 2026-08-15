@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as SurveyRouteImport } from './routes/survey'
 import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as AuthenticatedCalibrationRouteImport } from './routes/_authenticated/calibration'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as BillingReturnRouteImport } from './routes/billing.return'
 import { Route as AuthenticatedCollabsIdRouteImport } from './routes/_authenticated/collabs.$id'
 import { Route as AuthenticatedCollabsNewRouteImport } from './routes/_authenticated/collabs.new'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
@@ -32,6 +34,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurveyRoute = SurveyRouteImport.update({
+  id: '/survey',
+  path: '/survey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UpgradeRoute = UpgradeRouteImport.update({
@@ -55,6 +62,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BillingReturnRoute = BillingReturnRouteImport.update({
+  id: '/billing/return',
+  path: '/billing/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCollabsIdRoute = AuthenticatedCollabsIdRouteImport.update({
   id: '/collabs/$id',
   path: '/collabs/$id',
@@ -74,10 +86,12 @@ const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
   '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -85,10 +99,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
   '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -98,10 +114,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
   '/_authenticated/calibration': typeof AuthenticatedCalibrationRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/billing/return': typeof BillingReturnRoute
   '/_authenticated/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/_authenticated/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
@@ -111,10 +129,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/survey'
     | '/upgrade'
     | '/calibration'
     | '/home'
     | '/settings'
+    | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
     | '/api/public/hooks/reminders'
@@ -122,10 +142,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/survey'
     | '/upgrade'
     | '/calibration'
     | '/home'
     | '/settings'
+    | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
     | '/api/public/hooks/reminders'
@@ -134,10 +156,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/survey'
     | '/upgrade'
     | '/_authenticated/calibration'
     | '/_authenticated/home'
     | '/_authenticated/settings'
+    | '/billing/return'
     | '/_authenticated/collabs/$id'
     | '/_authenticated/collabs/new'
     | '/api/public/hooks/reminders'
@@ -147,7 +171,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  SurveyRoute: typeof SurveyRoute
   UpgradeRoute: typeof UpgradeRoute
+  BillingReturnRoute: typeof BillingReturnRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
 
@@ -172,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/survey': {
+      id: '/survey'
+      path: '/survey'
+      fullPath: '/survey'
+      preLoaderRoute: typeof SurveyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upgrade': {
@@ -201,6 +234,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/billing/return': {
+      id: '/billing/return'
+      path: '/billing/return'
+      fullPath: '/billing/return'
+      preLoaderRoute: typeof BillingReturnRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/collabs/$id': {
       id: '/_authenticated/collabs/$id'
@@ -249,7 +289,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  SurveyRoute: SurveyRoute,
   UpgradeRoute: UpgradeRoute,
+  BillingReturnRoute: BillingReturnRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
 export const routeTree = rootRouteImport
