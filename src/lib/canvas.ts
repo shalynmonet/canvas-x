@@ -156,6 +156,7 @@ export function collabDayState(
 export function hasAccess(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
   if (profile.subscription_status === "active") return true;
+  if (profile.subscription_status === "lifetime") return true;
   return (
     profile.subscription_status === "trialing" &&
     new Date(profile.trial_ends_at).getTime() > Date.now()
