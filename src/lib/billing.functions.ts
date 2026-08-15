@@ -140,8 +140,11 @@ export const syncSubscription = createServerFn({ method: "POST" })
       .select("stripe_subscription_id, subscription_status")
       .eq("id", userId)
       .maybeSingle();
-    const subId = (profile as { stripe_subscription_id?: string | null } | null)
-      ?.stripe_subscription_id;
+    const row = profile as
+      | { stripe_subscription_id?: string | null; subscription_status?: string | null }
+      | null;
+    if (row?.subscription_status === "lifetime") return { status: "lifetime" };
+    const subId = row?.stripe_subscription_id;
     if (!subId) return { status: null };
 
     const sub = await stripe(`subscriptions/${encodeURIComponent(subId)}`);
