@@ -121,8 +121,8 @@ export function CollabForm({
 
   const badge = match ? (
     <span className="inline-block rounded-full bg-accent/12 px-2.5 py-1 text-[11px] font-semibold text-accent">
-      Recommended based on {match.response_count} creator response
-      {match.response_count === 1 ? "" : "s"} via Terac
+      Recommended based on {match.responseCount} creator response
+      {match.responseCount === 1 ? "" : "s"} via Terac
     </span>
   ) : null;
 
