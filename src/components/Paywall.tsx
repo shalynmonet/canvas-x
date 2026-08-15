@@ -72,6 +72,16 @@ const perks = [
 
 export function PlanOptions() {
   const { live } = useOfferCountdown();
+  const [autoPlan, setAutoPlan] = useState<Plan | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("start") !== "1") return;
+    const plan = params.get("plan");
+    if (plan === "lifetime" || plan === "yearly") setAutoPlan(plan);
+  }, []);
+
+
 
   return (
     <div className="space-y-4">
