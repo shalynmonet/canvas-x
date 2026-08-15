@@ -120,18 +120,20 @@ async function sendLinqMessage(
 
   // Prefer replying inside the existing chat thread; fall back to handle send.
   const attempts: Array<{ url: string; body: Record<string, unknown> }> = [];
+  const messageBody = { message: { parts: [{ type: "text", value: message }] } };
   if (target.chatId) {
     attempts.push({
-      url: `https://api.linqapp.com/v1/chats/${target.chatId}/messages`,
-      body: { parts: [{ type: "text", value: message }] },
+      url: `https://api.linqapp.com/v3/chats/${target.chatId}/messages`,
+      body: messageBody,
     });
   }
   if (target.phone) {
     attempts.push({
-      url: "https://api.linqapp.com/v1/messages",
-      body: { to: target.phone, channel: "imessage", text: message },
+      url: "https://api.linqapp.com/v3/messages",
+      body: { to: [target.phone], ...messageBody },
     });
   }
+
   if (attempts.length === 0) return { ok: false, detail: "no chat id or phone in payload" };
 
   const details: string[] = [];
