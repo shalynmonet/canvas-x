@@ -76,8 +76,8 @@ export const YEARLY_PRICE_USD = 14;
 /** Launch-offer lifetime price. */
 export const LIFETIME_PRICE_USD = 1;
 
-/** Launch-day lifetime offer deadline: 3:45pm Chicago (CDT, UTC-5). */
-export const LIFETIME_OFFER_ENDS_AT = "2026-08-15T20:45:00Z";
+/** Launch-day lifetime offer deadline: 7:45pm Chicago (CDT, UTC-5). */
+export const LIFETIME_OFFER_ENDS_AT = "2026-08-16T00:45:00Z";
 
 export function lifetimeOfferMsLeft(now: number = Date.now()): number {
   return Math.max(0, new Date(LIFETIME_OFFER_ENDS_AT).getTime() - now);
