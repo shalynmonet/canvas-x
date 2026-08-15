@@ -14,13 +14,262 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      calibration_responses: {
+        Row: {
+          collab_type: string
+          created_at: string
+          engagement_minutes: number
+          id: string
+          min_posts: number
+          respondent_source: string
+          warmup_days: number
+        }
+        Insert: {
+          collab_type: string
+          created_at?: string
+          engagement_minutes: number
+          id?: string
+          min_posts: number
+          respondent_source?: string
+          warmup_days: number
+        }
+        Update: {
+          collab_type?: string
+          created_at?: string
+          engagement_minutes?: number
+          id?: string
+          min_posts?: number
+          respondent_source?: string
+          warmup_days?: number
+        }
+        Relationships: []
+      }
+      calibration_results: {
+        Row: {
+          avg_engagement_minutes: number | null
+          avg_min_posts: number | null
+          avg_warmup_days: number | null
+          collab_type: string
+          response_count: number
+          updated_at: string
+        }
+        Insert: {
+          avg_engagement_minutes?: number | null
+          avg_min_posts?: number | null
+          avg_warmup_days?: number | null
+          collab_type: string
+          response_count?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_engagement_minutes?: number | null
+          avg_min_posts?: number | null
+          avg_warmup_days?: number | null
+          collab_type?: string
+          response_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      collabs: {
+        Row: {
+          base_pay: number
+          brand_name: string
+          cpm_rate: number
+          created_at: string
+          daily_engagement_minutes: number
+          id: string
+          main_poc: string
+          min_daily_posts: number
+          pay_frequency: string
+          social_accounts: string
+          source: string
+          start_date: string
+          status: string
+          user_id: string
+          warmup_days: number
+        }
+        Insert: {
+          base_pay?: number
+          brand_name: string
+          cpm_rate?: number
+          created_at?: string
+          daily_engagement_minutes?: number
+          id?: string
+          main_poc?: string
+          min_daily_posts?: number
+          pay_frequency?: string
+          social_accounts?: string
+          source?: string
+          start_date?: string
+          status?: string
+          user_id: string
+          warmup_days?: number
+        }
+        Update: {
+          base_pay?: number
+          brand_name?: string
+          cpm_rate?: number
+          created_at?: string
+          daily_engagement_minutes?: number
+          id?: string
+          main_poc?: string
+          min_daily_posts?: number
+          pay_frequency?: string
+          social_accounts?: string
+          source?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+          warmup_days?: number
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          collab_id: string
+          created_at: string
+          engaged: boolean
+          id: string
+          log_date: string
+          notes: string | null
+          posted_count: number
+          warmed_up: boolean
+        }
+        Insert: {
+          collab_id: string
+          created_at?: string
+          engaged?: boolean
+          id?: string
+          log_date?: string
+          notes?: string | null
+          posted_count?: number
+          warmed_up?: boolean
+        }
+        Update: {
+          collab_id?: string
+          created_at?: string
+          engaged?: boolean
+          id?: string
+          log_date?: string
+          notes?: string | null
+          posted_count?: number
+          warmed_up?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_logs_collab_id_fkey"
+            columns: ["collab_id"]
+            isOneToOne: false
+            referencedRelation: "collabs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          reminder_enabled: boolean
+          reminder_time: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string
+          trial_ends_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string
+          phone?: string | null
+          reminder_enabled?: boolean
+          reminder_time?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
+          trial_ends_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          reminder_enabled?: boolean
+          reminder_time?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
+          trial_ends_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reminder_logs: {
+        Row: {
+          collab_ids_flagged: string
+          id: string
+          message: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          collab_ids_flagged?: string
+          id?: string
+          message?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          collab_ids_flagged?: string
+          id?: string
+          message?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      view_logs: {
+        Row: {
+          collab_id: string
+          day_number: number
+          id: string
+          logged_at: string
+          view_count: number
+        }
+        Insert: {
+          collab_id: string
+          day_number: number
+          id?: string
+          logged_at?: string
+          view_count?: number
+        }
+        Update: {
+          collab_id?: string
+          day_number?: number
+          id?: string
+          logged_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "view_logs_collab_id_fkey"
+            columns: ["collab_id"]
+            isOneToOne: false
+            referencedRelation: "collabs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      recompute_calibration: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
