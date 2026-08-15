@@ -27,14 +27,14 @@ async function stripe(path: string, body?: Record<string, string>) {
   return json;
 }
 
-/** Creates a Stripe Checkout session: $14/yr subscription or $1 lifetime. */
+/** Creates a Stripe Checkout session: $14 lifetime, or $1 lifetime while the offer runs. */
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
         origin: z.string().url(),
-        plan: z.enum(["yearly", "lifetime"]).default("yearly"),
+        plan: z.enum(["standard", "lifetime"]).default("standard"),
       })
       .parse(input),
   )
@@ -84,12 +84,11 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
           }
         : {
             ...base,
-            mode: "subscription",
+            mode: "payment",
             "line_items[0][price_data][unit_amount]": "1400",
-            "line_items[0][price_data][recurring][interval]": "year",
-            "line_items[0][price_data][product_data][name]": "CanvasX Pro (yearly)",
-            "subscription_data[metadata][user_id]": userId,
-            "metadata[plan]": "yearly",
+            "line_items[0][price_data][product_data][name]": "CanvasX Lifetime Access",
+            "payment_intent_data[metadata][user_id]": userId,
+            "metadata[plan]": "standard",
           },
     );
 

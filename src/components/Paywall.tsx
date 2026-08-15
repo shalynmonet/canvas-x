@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { OfferCountdown, useOfferCountdown } from "@/components/OfferCountdown";
 import { createCheckoutSession } from "@/lib/billing.functions";
-import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
+import { LIFETIME_PRICE_USD, STANDARD_PRICE_USD } from "@/lib/canvas";
 
-type Plan = "yearly" | "lifetime";
+type Plan = "standard" | "lifetime";
 
 export function UpgradeButton({
   label = "Upgrade to continue",
-  plan = "yearly",
+  plan = "standard",
   variant = "default",
 }: {
   label?: string;
@@ -74,14 +74,15 @@ export function PlanOptions() {
       )}
 
       <section className="card-surface space-y-3 p-5 text-left">
-        <h2 className="text-lg font-semibold">${YEARLY_PRICE_USD} per year</h2>
+        <h2 className="text-lg font-semibold">${STANDARD_PRICE_USD} lifetime</h2>
         <p className="text-sm text-muted-foreground">
-          Start with a 7-day free trial, then ${YEARLY_PRICE_USD}/year. Cancel anytime.
+          Start with a 7-day free trial, then one payment of ${STANDARD_PRICE_USD} for lifetime
+          access. No renewals.
         </p>
         <UpgradeButton
-          plan="yearly"
+          plan="standard"
           variant={live ? "outline" : "default"}
-          label={`Subscribe — $${YEARLY_PRICE_USD}/year`}
+          label={`Get lifetime access — $${STANDARD_PRICE_USD}`}
         />
       </section>
     </div>
@@ -96,8 +97,8 @@ export function Paywall() {
       </p>
       <h1 className="text-3xl font-bold">Keep every collab on track</h1>
       <p className="text-sm text-muted-foreground">
-        Your free trial covers the first 7 days. Pick the plan that fits — ${YEARLY_PRICE_USD} a
-        year, or ${LIFETIME_PRICE_USD} once for lifetime access while the offer is live.
+        Your free trial covers the first 7 days. One payment of ${STANDARD_PRICE_USD} for lifetime
+        access — or just ${LIFETIME_PRICE_USD} while the launch offer is live.
       </p>
       <ul className="card-surface space-y-2 p-5 text-left text-sm">
         {perks.map((perk) => (
