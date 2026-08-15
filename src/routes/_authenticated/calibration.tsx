@@ -1,12 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { Button } from "@/components/ui/button";
 import { useCalibration } from "@/hooks/use-canvas";
 import { summarizeCalibration } from "@/lib/canvas";
-import { distributeSurveyViaTerac } from "@/lib/terac.functions";
 
 export const Route = createFileRoute("/_authenticated/calibration")({
   head: () => ({
@@ -35,24 +30,7 @@ export const Route = createFileRoute("/_authenticated/calibration")({
 
 function RecommendationsScreen() {
   const { data: rows = [] } = useCalibration();
-  const distribute = useServerFn(distributeSurveyViaTerac);
-  const [busy, setBusy] = useState(false);
   const summary = summarizeCalibration(rows);
-
-  async function send() {
-    setBusy(true);
-    try {
-      const result = await distribute({
-        data: { surveyUrl: `${window.location.origin}/survey`, sampleSize: 40 },
-      });
-      if (result.ok) toast.success("Survey sent to Terac respondents");
-      else toast.error(result.error ?? "Terac distribution failed");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Terac distribution failed");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const round = (n: number | null, step = 1) =>
     n === null ? null : Math.round(n / step) * step;
@@ -91,9 +69,6 @@ function RecommendationsScreen() {
         )}
       </section>
 
-      <Button className="w-full" size="lg" disabled={busy} onClick={send}>
-        {busy ? "Sending to Terac…" : "Distribute survey via Terac"}
-      </Button>
     </div>
   );
 }
