@@ -133,13 +133,18 @@ function CollabDetail() {
           )}
           {Array.from({ length: elapsedDays }, (_, i) => i + 1).map((day) => (
             <div key={day} className="flex items-center gap-3">
-              <span className="w-16 text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor={`views-day-${day}`}
+                className="w-16 text-xs font-semibold text-muted-foreground"
+              >
                 Day {day}
-              </span>
+              </label>
               <Input
+                id={`views-day-${day}`}
                 type="number"
                 min={0}
                 inputMode="numeric"
+                aria-label={`Views logged on day ${day}`}
                 defaultValue={viewByDay.get(day)?.view_count ?? ""}
                 placeholder="views"
                 onBlur={(e) => saveViews(day, Number(e.target.value))}
