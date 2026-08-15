@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -91,17 +91,9 @@ function RecommendationsScreen() {
         )}
       </section>
 
-      <div className="space-y-3">
-        <Button className="w-full" size="lg" disabled={busy} onClick={send}>
-          {busy ? "Sending to Terac…" : "Distribute survey via Terac"}
-        </Button>
-        <Link
-          to="/survey"
-          className="block text-center text-sm font-medium text-accent underline"
-        >
-          Open the survey yourself
-        </Link>
-      </div>
+      <Button className="w-full" size="lg" disabled={busy} onClick={send}>
+        {busy ? "Sending to Terac…" : "Distribute survey via Terac"}
+      </Button>
     </div>
   );
 }
