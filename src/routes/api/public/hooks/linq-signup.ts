@@ -60,14 +60,46 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
     handlers: {
       POST: async ({ request }) => {
         const secret = expectedSecret();
+        const sigHeader = request.headers.get("x-linq-signature");
+        const secretHeader = request.headers.get("x-webhook-secret");
+        const authHeader = request.headers.get("authorization");
         const provided =
-          request.headers.get("x-linq-signature") ??
-          request.headers.get("x-webhook-secret") ??
-          (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+          sigHeader ?? secretHeader ?? (authHeader ?? "").replace(/^Bearer\s+/i, "");
+
+        // Diagnostic: never log full secret values, only shape + fingerprint.
+        const mask = (v: string | null | undefined) =>
+          !v ? null : { len: v.length, head: v.slice(0, 4), tail: v.slice(-4) };
+        console.log(
+          "[linq-signup] inbound auth debug",
+          JSON.stringify({
+            allHeaderNames: [...request.headers.keys()],
+            headers: {
+              "x-linq-signature": mask(sigHeader),
+              "x-webhook-secret": mask(secretHeader),
+              authorization: mask(authHeader),
+            },
+            providedSource: sigHeader
+              ? "x-linq-signature"
+              : secretHeader
+                ? "x-webhook-secret"
+                : authHeader
+                  ? "authorization"
+                  : "none",
+            provided: mask(provided),
+            expected: mask(secret),
+            expectedFrom: process.env["LINQ_WEBHOOK_SECRET"]
+              ? "LINQ_WEBHOOK_SECRET"
+              : process.env["LINQ_API_KEY"]
+                ? "LINQ_API_KEY"
+                : "unset",
+            match: Boolean(secret && provided && timingSafeEqual(provided, secret)),
+          }),
+        );
 
         if (!secret || !provided || !timingSafeEqual(provided, secret)) {
           return new Response("Unauthorized", { status: 401 });
         }
+
 
         let raw: unknown;
         try {
