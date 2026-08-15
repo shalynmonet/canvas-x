@@ -12,15 +12,22 @@ import { isLifetimeOfferLive } from "@/lib/canvas";
  */
 
 const payloadSchema = z.object({
+  event: z.string().max(120).optional(),
+  type: z.string().max(120).optional(),
   phone: z.string().min(5).max(32).optional(),
   from: z.string().min(5).max(32).optional(),
   name: z.string().max(120).optional(),
   message: z.string().max(2000).optional(),
   text: z.string().max(2000).optional(),
   body: z.string().max(2000).optional(),
+  attachments: z.array(z.unknown()).max(20).optional(),
 });
 
+/** Linq webhook event we subscribe to: carries full inbound message + attachments. */
+const INBOUND_EVENT = "message.received";
+
 const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
+
 
 function expectedSecret(): string | null {
   return process.env["LINQ_WEBHOOK_SECRET"] ?? process.env["LINQ_API_KEY"] ?? null;
