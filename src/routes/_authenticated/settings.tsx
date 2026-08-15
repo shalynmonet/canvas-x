@@ -219,7 +219,9 @@ function SettingsScreen() {
             <span className="font-medium text-foreground">
               {profile.subscription_status === "lifetime"
                 ? "lifetime access"
-                : profile.subscription_status}
+                : profile.subscription_status === "active"
+                  ? "active (yearly)"
+                  : profile.subscription_status}
             </span>
             {profile.subscription_status === "trialing" &&
               ` — ${trialDaysLeft(profile)} day(s) of trial left`}
