@@ -20,6 +20,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as BillingReturnRouteImport } from './routes/billing.return'
 import { Route as AuthenticatedCollabsIdRouteImport } from './routes/_authenticated/collabs.$id'
 import { Route as AuthenticatedCollabsNewRouteImport } from './routes/_authenticated/collabs.new'
+import { Route as ApiPublicHooksLinqSignupRouteImport } from './routes/api/public/hooks/linq-signup'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,6 +78,12 @@ const AuthenticatedCollabsNewRoute = AuthenticatedCollabsNewRouteImport.update({
   path: '/collabs/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksLinqSignupRoute =
+  ApiPublicHooksLinqSignupRouteImport.update({
+    id: '/api/public/hooks/linq-signup',
+    path: '/api/public/hooks/linq-signup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
   id: '/api/public/hooks/reminders',
   path: '/api/public/hooks/reminders',
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
+  '/api/public/hooks/linq-signup': typeof ApiPublicHooksLinqSignupRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
+  '/api/public/hooks/linq-signup': typeof ApiPublicHooksLinqSignupRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRoutesById {
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/billing/return': typeof BillingReturnRoute
   '/_authenticated/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/_authenticated/collabs/new': typeof AuthenticatedCollabsNewRoute
+  '/api/public/hooks/linq-signup': typeof ApiPublicHooksLinqSignupRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
 export interface FileRouteTypes {
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
+    | '/api/public/hooks/linq-signup'
     | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
+    | '/api/public/hooks/linq-signup'
     | '/api/public/hooks/reminders'
   id:
     | '__root__'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/billing/return'
     | '/_authenticated/collabs/$id'
     | '/_authenticated/collabs/new'
+    | '/api/public/hooks/linq-signup'
     | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
 }
@@ -174,6 +187,7 @@ export interface RootRouteChildren {
   SurveyRoute: typeof SurveyRoute
   UpgradeRoute: typeof UpgradeRoute
   BillingReturnRoute: typeof BillingReturnRoute
+  ApiPublicHooksLinqSignupRoute: typeof ApiPublicHooksLinqSignupRoute
   ApiPublicHooksRemindersRoute: typeof ApiPublicHooksRemindersRoute
 }
 
@@ -256,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCollabsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/linq-signup': {
+      id: '/api/public/hooks/linq-signup'
+      path: '/api/public/hooks/linq-signup'
+      fullPath: '/api/public/hooks/linq-signup'
+      preLoaderRoute: typeof ApiPublicHooksLinqSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/reminders': {
       id: '/api/public/hooks/reminders'
       path: '/api/public/hooks/reminders'
@@ -292,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   SurveyRoute: SurveyRoute,
   UpgradeRoute: UpgradeRoute,
   BillingReturnRoute: BillingReturnRoute,
+  ApiPublicHooksLinqSignupRoute: ApiPublicHooksLinqSignupRoute,
   ApiPublicHooksRemindersRoute: ApiPublicHooksRemindersRoute,
 }
 export const routeTree = rootRouteImport
