@@ -20,7 +20,7 @@ const payloadSchema = z.object({
   body: z.string().max(2000).optional(),
 });
 
-const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "trial", "yes"];
+const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
 
 function expectedSecret(): string | null {
   return process.env["LINQ_WEBHOOK_SECRET"] ?? process.env["LINQ_API_KEY"] ?? null;
