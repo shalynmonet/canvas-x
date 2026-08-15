@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, MessageSquareDot, TrendingUp } from "lucide-react";
-import { MONTHLY_PRICE_USD } from "@/lib/canvas";
+import { OfferCountdown } from "@/components/OfferCountdown";
+import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,7 +63,17 @@ function Landing() {
           across all your brand deals — with defaults calibrated by real creators.
         </p>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 rounded-2xl border border-accent/40 bg-secondary/40 p-4 text-left">
+          <p className="text-sm font-semibold">
+            Launch offer: ${LIFETIME_PRICE_USD} for lifetime access
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sign up before the timer runs out and never pay again.
+          </p>
+          <OfferCountdown className="mt-2" />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
             to="/auth"
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
@@ -70,15 +81,16 @@ function Landing() {
             Start 7-day free trial
           </Link>
           <Link
-            to="/survey"
+            to="/upgrade"
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary"
           >
-            Take the creator survey
+            See plans
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Then ${MONTHLY_PRICE_USD}/month. Cancel anytime.
+          Then ${YEARLY_PRICE_USD}/year — or ${LIFETIME_PRICE_USD} once while the offer lasts.
         </p>
+
 
         <div className="mt-14 space-y-4">
           {features.map(({ icon: Icon, title, body }) => (

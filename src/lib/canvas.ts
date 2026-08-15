@@ -71,6 +71,28 @@ export const PAY_FREQUENCIES: PayFrequency[] = [
 ];
 
 export const MONTHLY_PRICE_USD = 9;
+export const YEARLY_PRICE_USD = 14;
+export const LIFETIME_PRICE_USD = 1;
+
+/** Launch-day lifetime offer deadline: 3:45pm Chicago (CDT, UTC-5). */
+export const LIFETIME_OFFER_ENDS_AT = "2026-08-15T20:45:00Z";
+
+export function lifetimeOfferMsLeft(now: number = Date.now()): number {
+  return Math.max(0, new Date(LIFETIME_OFFER_ENDS_AT).getTime() - now);
+}
+
+export function isLifetimeOfferLive(now: number = Date.now()): boolean {
+  return lifetimeOfferMsLeft(now) > 0;
+}
+
+export function formatCountdown(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
 
 /** Local (not UTC) YYYY-MM-DD */
 export function toISODate(d: Date): string {
@@ -134,6 +156,7 @@ export function collabDayState(
 export function hasAccess(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
   if (profile.subscription_status === "active") return true;
+  if (profile.subscription_status === "lifetime") return true;
   return (
     profile.subscription_status === "trialing" &&
     new Date(profile.trial_ends_at).getTime() > Date.now()

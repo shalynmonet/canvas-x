@@ -6,15 +6,22 @@ export const Route = createFileRoute("/upgrade")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Upgrade CanvasX — $9/month" },
+      { title: "CanvasX plans — $14/year or $1 lifetime today" },
       {
         name: "description",
-        content: "Subscribe to CanvasX to keep tracking every brand collab after your trial.",
+        content:
+          "Choose your CanvasX plan: a 7-day free trial then $14/year, or $1 once for lifetime access while the launch offer lasts.",
       },
-      { property: "og:title", content: "Upgrade CanvasX" },
-      { property: "og:description", content: "Keep every brand deal organized for $9/month." },
+      { property: "og:title", content: "CanvasX plans — $14/year or $1 lifetime" },
+      {
+        property: "og:description",
+        content: "Keep every brand deal organized for $14/year, or $1 lifetime today only.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+
   component: () => (
     <AppShell>
       <Paywall />
