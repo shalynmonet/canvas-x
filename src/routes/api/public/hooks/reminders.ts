@@ -55,11 +55,12 @@ async function sendLinqMessage(phone: string, message: string) {
   const key = process.env["LINQ_API_KEY"];
   if (!key) return { ok: false, error: "Linq is not configured" };
   try {
-    const res = await fetch("https://api.linqapp.com/v1/messages", {
+    const res = await fetch("https://api.linqapp.com/v3/messages", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ to: phone, channel: "imessage", text: message }),
+      body: JSON.stringify({ to: [phone], message: { parts: [{ type: "text", value: message }] } }),
     });
+
     if (!res.ok) {
       console.error("Linq send failed", res.status, await res.text().catch(() => ""));
       return { ok: false, error: `Linq responded ${res.status}` };
