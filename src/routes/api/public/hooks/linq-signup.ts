@@ -87,6 +87,7 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
 
         const origin = new URL(request.url).origin;
         const signupUrl = `${origin}/auth`;
+        const upgradeUrl = `${origin}/upgrade`;
 
         await supabase.from("signup_leads").insert({
           phone,
@@ -97,12 +98,22 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
           status: isSignup ? "invited" : "new",
         });
 
+        const isLifetimeIntent = message.toLowerCase().includes("canvas");
+        const lifetimeLive = isLifetimeOfferLive();
+
         let replied = false;
         if (isSignup && phone) {
-          replied = await sendLinqMessage(
-            phone,
-            `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
-          );
+          if (isLifetimeIntent && lifetimeLive) {
+            replied = await sendLinqMessage(
+              phone,
+              `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`,
+            );
+          } else {
+            replied = await sendLinqMessage(
+              phone,
+              `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
+            );
+          }
         }
 
         return Response.json({ ok: true, lead: true, signup_intent: isSignup, replied });
