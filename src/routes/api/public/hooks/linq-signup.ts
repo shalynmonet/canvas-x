@@ -154,7 +154,9 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
         }
 
         const data = parsed.data;
-        const event = data.event ?? data.type ?? null;
+        const event =
+          data.event ?? data.type ?? request.headers.get("x-webhook-event") ?? null;
+
         if (event && event !== INBOUND_EVENT) {
           return Response.json({ ok: true, ignored: true, event });
         }
