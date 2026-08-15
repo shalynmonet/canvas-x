@@ -6,6 +6,7 @@ export interface Profile {
   phone: string | null;
   reminder_time: string | null;
   reminder_enabled: boolean;
+  timezone: string | null;
   trial_ends_at: string;
   subscription_status: string;
   stripe_customer_id: string | null;
