@@ -26,10 +26,17 @@ async function stripe(path: string, body?: Record<string, string>) {
   return json;
 }
 
-/** Creates a Stripe Checkout session for the $9/mo CanvasX subscription. */
+/** Creates a Stripe Checkout session: $14/yr subscription or $1 lifetime. */
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ origin: z.string().url() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        origin: z.string().url(),
+        plan: z.enum(["yearly", "lifetime"]).default("yearly"),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
     const { data: profile } = await supabase
@@ -49,22 +56,45 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       await supabase.from("profiles").update({ stripe_customer_id: customerId }).eq("id", userId);
     }
 
-    const session = await stripe("checkout/sessions", {
-      mode: "subscription",
+    const lifetime = data.plan === "lifetime";
+    if (lifetime && Date.now() >= new Date(LIFETIME_OFFER_ENDS_AT).getTime()) {
+      throw new Error("The $1 lifetime offer has expired");
+    }
+
+    const base: Record<string, string> = {
       customer: customerId,
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "usd",
-      "line_items[0][price_data][unit_amount]": "900",
-      "line_items[0][price_data][recurring][interval]": "month",
-      "line_items[0][price_data][product_data][name]": "CanvasX Pro",
-      "subscription_data[metadata][user_id]": userId,
       client_reference_id: userId,
       success_url: `${data.origin}/billing/return?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${data.origin}/upgrade`,
-    });
+    };
+
+    const session = await stripe(
+      "checkout/sessions",
+      lifetime
+        ? {
+            ...base,
+            mode: "payment",
+            "line_items[0][price_data][unit_amount]": "100",
+            "line_items[0][price_data][product_data][name]": "CanvasX Lifetime Access",
+            "payment_intent_data[metadata][user_id]": userId,
+            "metadata[plan]": "lifetime",
+          }
+        : {
+            ...base,
+            mode: "subscription",
+            "line_items[0][price_data][unit_amount]": "1400",
+            "line_items[0][price_data][recurring][interval]": "year",
+            "line_items[0][price_data][product_data][name]": "CanvasX Pro (yearly)",
+            "subscription_data[metadata][user_id]": userId,
+            "metadata[plan]": "yearly",
+          },
+    );
 
     return { url: String(session["url"]) };
   });
+
 
 /**
  * Payments Agent: confirms payment directly with Stripe and unlocks access.
