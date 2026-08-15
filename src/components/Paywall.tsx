@@ -74,14 +74,15 @@ export function PlanOptions() {
       )}
 
       <section className="card-surface space-y-3 p-5 text-left">
-        <h2 className="text-lg font-semibold">${YEARLY_PRICE_USD} per year</h2>
+        <h2 className="text-lg font-semibold">${STANDARD_PRICE_USD} lifetime</h2>
         <p className="text-sm text-muted-foreground">
-          Start with a 7-day free trial, then ${YEARLY_PRICE_USD}/year. Cancel anytime.
+          Start with a 7-day free trial, then one payment of ${STANDARD_PRICE_USD} for lifetime
+          access. No renewals.
         </p>
         <UpgradeButton
-          plan="yearly"
+          plan="standard"
           variant={live ? "outline" : "default"}
-          label={`Subscribe — $${YEARLY_PRICE_USD}/year`}
+          label={`Get lifetime access — $${STANDARD_PRICE_USD}`}
         />
       </section>
     </div>
