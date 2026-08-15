@@ -76,19 +76,21 @@ function Landing() {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
             to="/upgrade"
+            search={{ plan: "lifetime", start: "1" }}
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             Claim your ${LIFETIME_PRICE_USD} lifetime access
           </Link>
           <Link
             to="/auth"
+            search={{ plan: "yearly" }}
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary"
           >
             Start 7-day trial, then ${YEARLY_PRICE_USD}/year
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Or start a 7-day trial, then ${YEARLY_PRICE_USD}/year.
+          Already have an account? Use the sign-in link above.
         </p>
 
 
