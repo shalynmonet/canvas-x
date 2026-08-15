@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="mx-auto max-w-2xl px-4 py-5">{children}</main>
 
-      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-10 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         <div className="mx-auto flex max-w-2xl">
           {tabs.map(({ to, label, icon: Icon }) => (
             <Link

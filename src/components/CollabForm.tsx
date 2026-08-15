@@ -127,7 +127,7 @@ export function CollabForm({
   ) : null;
 
   return (
-    <form onSubmit={submit} className="relative z-20 space-y-5 pb-6">
+    <form onSubmit={submit} className="space-y-5 pb-6">
       <Field label="Brand name" htmlFor="brand_name">
         <Input
           id="brand_name"
