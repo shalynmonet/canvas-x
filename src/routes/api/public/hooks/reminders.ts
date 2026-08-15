@@ -23,6 +23,7 @@ interface ProfileRow {
   phone: string | null;
   reminder_time: string | null;
   reminder_enabled: boolean;
+  timezone: string;
   subscription_status: string;
   trial_ends_at: string;
 }
@@ -30,6 +31,24 @@ interface ProfileRow {
 function minutesOfDay(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
+}
+
+function localTimeComponents(utc: Date, timeZone: string): { hours: number; minutes: number; date: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(utc);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "0";
+  return {
+    hours: Number(get("hour")),
+    minutes: Number(get("minute")),
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+  };
 }
 
 async function sendLinqMessage(phone: string, message: string) {
@@ -82,13 +101,11 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         });
 
         const now = new Date();
-        const nowMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-        const today = now.toISOString().slice(0, 10);
         const appUrl = new URL(request.url).origin;
 
         const { data: profiles, error } = await db
           .from("profiles")
-          .select("id, name, phone, reminder_time, reminder_enabled, subscription_status, trial_ends_at")
+          .select("id, name, phone, reminder_time, reminder_enabled, timezone, subscription_status, trial_ends_at")
           .eq("reminder_enabled", true)
           .not("phone", "is", null);
         if (error) return Response.json({ error: error.message }, { status: 500 });
@@ -98,6 +115,11 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
         for (const profile of (profiles ?? []) as ProfileRow[]) {
           if (!profile.reminder_time || !profile.phone) continue;
+
+          const tz = profile.timezone || "UTC";
+          const local = localTimeComponents(now, tz);
+          const nowMinutes = local.hours * 60 + local.minutes;
+          const today = local.date;
           const target = minutesOfDay(profile.reminder_time);
           if (Math.abs(nowMinutes - target) > 15) continue;
 
@@ -117,11 +139,15 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
           const { data: alreadySent } = await db
             .from("reminder_logs")
-            .select("id")
+            .select("id, sent_at")
             .eq("user_id", profile.id)
-            .gte("sent_at", `${today}T00:00:00Z`)
+            .order("sent_at", { ascending: false })
             .limit(1);
-          if ((alreadySent ?? []).length > 0) {
+          const sentToday = (alreadySent ?? []).some((log) => {
+            const sentLocal = localTimeComponents(new Date(log.sent_at), tz);
+            return sentLocal.date === today;
+          });
+          if (sentToday) {
             skipped += 1;
             continue;
           }
