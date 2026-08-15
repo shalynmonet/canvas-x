@@ -94,6 +94,10 @@ function CollabDetail() {
           {warmupEndDate(collab.start_date, collab.warmup_days)} · {collab.pay_frequency} ·{" "}
           {collab.status}
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {collab.daily_engagement_minutes} min daily engagement · {collab.min_daily_posts} post
+          {collab.min_daily_posts === 1 ? "" : "s"} per day
+        </p>
       </div>
 
       <section className="card-surface bg-primary p-5 text-primary-foreground">
