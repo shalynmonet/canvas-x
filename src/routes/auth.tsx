@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,20 @@ const signupSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const [plan, setPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("plan");
+    if (value === "lifetime" || value === "yearly") setPlan(value);
+  }, []);
+
+  function afterAuth() {
+    if (plan) {
+      window.location.href = `/upgrade?plan=${plan}&start=1`;
+      return;
+    }
+    navigate({ to: "/home" });
+  }
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const [values, setValues] = useState({
     name: "",
@@ -66,7 +80,7 @@ function AuthPage() {
           password: values.password,
         });
         if (error) throw error;
-        navigate({ to: "/home" });
+        afterAuth();
         return;
       }
 
@@ -79,7 +93,9 @@ function AuthPage() {
         email: parsed.data.email,
         password: parsed.data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/home`,
+          emailRedirectTo: plan
+            ? `${window.location.origin}/upgrade?plan=${plan}&start=1`
+            : `${window.location.origin}/home`,
           data: {
             name: parsed.data.name,
             phone: parsed.data.phone,
@@ -90,8 +106,8 @@ function AuthPage() {
       });
       if (error) throw error;
       if (data.session) {
-        toast.success("Your 7-day free trial has started");
-        navigate({ to: "/home" });
+        toast.success(plan ? "Account created — opening checkout" : "Your 7-day free trial has started");
+        afterAuth();
       } else {
         setCheckEmail(true);
       }
