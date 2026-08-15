@@ -227,14 +227,46 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
 
         const data = parsed.data;
         const event =
-          data.event ?? data.type ?? request.headers.get("x-webhook-event") ?? null;
+          data.event ??
+          data.type ??
+          data.event_type ??
+          request.headers.get("x-webhook-event") ??
+          null;
 
         if (event && event !== INBOUND_EVENT) {
           return Response.json({ ok: true, ignored: true, event });
         }
-        const phone = data.phone ?? data.from ?? null;
-        const message = data.message ?? data.text ?? data.body ?? "";
-        const isSignup = SIGNUP_WORDS.some((w) => message.toLowerCase().includes(w));
+
+        const nested = data.data;
+        const nestedText = (nested?.parts ?? [])
+          .filter((p) => (p.type ?? "text") === "text")
+          .map((p) => p.value ?? "")
+          .join(" ")
+          .trim();
+
+        const phone =
+          data.phone ?? data.from ?? nested?.sender_handle?.handle ?? null;
+        const chatId = nested?.chat?.id ?? null;
+        const message = data.message ?? data.text ?? data.body ?? nestedText ?? "";
+
+        // Never react to our own outbound messages.
+        const isOutbound =
+          nested?.direction === "outbound" || nested?.sender_handle?.is_me === true;
+
+        const isSignup =
+          !isOutbound && SIGNUP_WORDS.some((w) => message.toLowerCase().includes(w));
+
+        console.log(
+          "[linq-signup] parsed inbound",
+          JSON.stringify({
+            event,
+            hasPhone: Boolean(phone),
+            hasChatId: Boolean(chatId),
+            messageLength: message.length,
+            isOutbound,
+            isSignup,
+          }),
+        );
 
         const supabase = createClient(
           process.env["SUPABASE_URL"]!,
@@ -258,22 +290,23 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
         const isLifetimeIntent = message.toLowerCase().includes("canvas");
         const lifetimeLive = isLifetimeOfferLive();
 
-        let replied = false;
-        if (isSignup && phone) {
-          if (isLifetimeIntent && lifetimeLive) {
-            replied = await sendLinqMessage(
-              phone,
-              `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`,
-            );
-          } else {
-            replied = await sendLinqMessage(
-              phone,
-              `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
-            );
-          }
+        let send: { ok: boolean; detail: string } = { ok: false, detail: "not attempted" };
+        if (isSignup && (phone || chatId)) {
+          const text =
+            isLifetimeIntent && lifetimeLive
+              ? `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`
+              : `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`;
+          send = await sendLinqMessage({ phone, chatId }, text);
         }
 
-        return Response.json({ ok: true, lead: true, signup_intent: isSignup, replied });
+        return Response.json({
+          ok: true,
+          lead: true,
+          signup_intent: isSignup,
+          replied: send.ok,
+          send_detail: send.detail,
+        });
+
       },
     },
   },
