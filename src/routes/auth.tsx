@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    plan:
-      search.plan === "lifetime" || search.plan === "yearly"
-        ? search.plan
-        : undefined,
-  }),
   head: () => ({
     meta: [
       { title: "Sign in to CanvasX — UGC collab organizer" },
@@ -47,7 +41,9 @@ const signupSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { plan } = Route.useSearch();
+  const location = useLocation();
+  const requestedPlan = new URLSearchParams(location.search).get("plan");
+  const plan = requestedPlan === "lifetime" || requestedPlan === "yearly" ? requestedPlan : null;
   const isLifetime = plan === "lifetime";
 
   function afterAuth() {
