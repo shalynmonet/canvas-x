@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { OfferCountdown, useOfferCountdown } from "@/components/OfferCountdown";
 import { createCheckoutSession } from "@/lib/billing.functions";
@@ -12,17 +13,26 @@ export function UpgradeButton({
   label = "Upgrade to continue",
   plan = "yearly",
   variant = "default",
+  autoStart = false,
 }: {
   label?: string;
   plan?: Plan;
   variant?: "default" | "outline";
+  autoStart?: boolean;
 }) {
   const checkout = useServerFn(createCheckoutSession);
   const [loading, setLoading] = useState(false);
+  const started = useRef(false);
 
   async function start() {
     setLoading(true);
     try {
+      // Checkout runs as the signed-in user, so make sure there is a session first.
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = `/auth?plan=${plan}`;
+        return;
+      }
       const { url } = await checkout({ data: { origin: window.location.origin, plan } });
       window.location.href = url;
     } catch (error) {
@@ -30,6 +40,14 @@ export function UpgradeButton({
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (autoStart && !started.current) {
+      started.current = true;
+      void start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   return (
     <Button
@@ -43,6 +61,7 @@ export function UpgradeButton({
     </Button>
   );
 }
+
 
 const perks = [
   "Unlimited collabs with calibrated defaults",
