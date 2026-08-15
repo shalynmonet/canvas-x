@@ -68,9 +68,14 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         const apiKey =
           request.headers.get("apikey") ??
           request.headers.get("authorization")?.replace("Bearer ", "");
-        if (!apiKey || apiKey !== process.env["SUPABASE_ANON_KEY"]) {
+        const allowedKeys = [
+          process.env["SUPABASE_ANON_KEY"],
+          process.env["SUPABASE_PUBLISHABLE_KEY"],
+        ].filter(Boolean);
+        if (!apiKey || !allowedKeys.includes(apiKey)) {
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
+
 
         const db = createClient(url, serviceKey, {
           auth: { persistSession: false, autoRefreshToken: false },
