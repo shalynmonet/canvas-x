@@ -71,8 +71,8 @@ export const PAY_FREQUENCIES: PayFrequency[] = [
 ];
 
 export const MONTHLY_PRICE_USD = 9;
-/** Standard one-time lifetime price once the launch offer ends. */
-export const STANDARD_PRICE_USD = 14;
+/** Standard yearly subscription price after the 7-day trial. */
+export const YEARLY_PRICE_USD = 14;
 /** Launch-offer lifetime price. */
 export const LIFETIME_PRICE_USD = 1;
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, MessageSquareDot, TrendingUp } from "lucide-react";
 import { OfferCountdown } from "@/components/OfferCountdown";
-import { LIFETIME_PRICE_USD, STANDARD_PRICE_USD } from "@/lib/canvas";
+import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -88,8 +88,8 @@ function Landing() {
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Then ${STANDARD_PRICE_USD} once for lifetime access — or just ${LIFETIME_PRICE_USD} while
-          the offer lasts.
+          Then ${YEARLY_PRICE_USD}/year — or just ${LIFETIME_PRICE_USD} for lifetime access while the
+          offer lasts.
         </p>
 
 
