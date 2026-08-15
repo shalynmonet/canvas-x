@@ -84,6 +84,7 @@ function AuthPage() {
             name: parsed.data.name,
             phone: parsed.data.phone,
             reminder_time: parsed.data.reminder_time,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         },
       });

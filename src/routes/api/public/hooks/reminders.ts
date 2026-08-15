@@ -23,6 +23,7 @@ interface ProfileRow {
   phone: string | null;
   reminder_time: string | null;
   reminder_enabled: boolean;
+  timezone: string;
   subscription_status: string;
   trial_ends_at: string;
 }
@@ -30,6 +31,24 @@ interface ProfileRow {
 function minutesOfDay(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
+}
+
+function localTimeComponents(utc: Date, timeZone: string): { hours: number; minutes: number; date: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(utc);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "0";
+  return {
+    hours: Number(get("hour")),
+    minutes: Number(get("minute")),
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+  };
 }
 
 async function sendLinqMessage(phone: string, message: string) {
@@ -82,13 +101,11 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         });
 
         const now = new Date();
-        const nowMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-        const today = now.toISOString().slice(0, 10);
         const appUrl = new URL(request.url).origin;
 
         const { data: profiles, error } = await db
           .from("profiles")
-          .select("id, name, phone, reminder_time, reminder_enabled, subscription_status, trial_ends_at")
+          .select("id, name, phone, reminder_time, reminder_enabled, timezone, subscription_status, trial_ends_at")
           .eq("reminder_enabled", true)
           .not("phone", "is", null);
         if (error) return Response.json({ error: error.message }, { status: 500 });
