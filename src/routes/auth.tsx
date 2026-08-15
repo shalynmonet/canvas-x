@@ -8,6 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    plan:
+      search.plan === "lifetime" || search.plan === "yearly"
+        ? search.plan
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in to CanvasX — UGC collab organizer" },
@@ -41,12 +47,8 @@ const signupSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [plan, setPlan] = useState<string | null>(null);
-
-  useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get("plan");
-    if (value === "lifetime" || value === "yearly") setPlan(value);
-  }, []);
+  const { plan } = Route.useSearch();
+  const isLifetime = plan === "lifetime";
 
   function afterAuth() {
     if (plan) {
@@ -106,7 +108,9 @@ function AuthPage() {
       });
       if (error) throw error;
       if (data.session) {
-        toast.success(plan ? "Account created — opening checkout" : "Your 7-day free trial has started");
+        toast.success(
+          plan ? "Account created — opening checkout" : "Your 7-day free trial has started",
+        );
         afterAuth();
       } else {
         setCheckEmail(true);
@@ -123,8 +127,9 @@ function AuthPage() {
       <div className="mx-auto max-w-sm px-4 py-20 text-center">
         <h1 className="text-2xl font-bold">Confirm your email</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          We sent a confirmation link to {values.email}. Open it and your 7-day free trial
-          starts right away.
+          We sent a confirmation link to {values.email}. Open it and {isLifetime
+            ? "we’ll take you straight to the $1 lifetime checkout."
+            : "your 7-day free trial starts right away."}
         </p>
       </div>
     );
@@ -136,11 +141,17 @@ function AuthPage() {
         CanvasX
       </Link>
       <h1 className="mt-8 text-3xl font-bold">
-        {mode === "signup" ? "Start your 7-day trial" : "Welcome back"}
+        {mode === "signup"
+          ? isLifetime
+            ? "Claim $1 lifetime access"
+            : "Start your 7-day trial"
+          : "Welcome back"}
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {mode === "signup"
-          ? "Every brand deal, warmup window and post count in one daily checklist."
+          ? isLifetime
+            ? "Create your account, then complete the one-time $1 checkout. No trial or renewal."
+            : "Every brand deal, warmup window and post count in one daily checklist."
           : "Pick up today's checklist where you left off."}
       </p>
 
@@ -215,7 +226,13 @@ function AuthPage() {
         )}
 
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+          {busy
+            ? "Please wait…"
+            : mode === "signup"
+              ? isLifetime
+                ? "Create account and continue"
+                : "Create account"
+              : "Sign in"}
         </Button>
       </form>
 
