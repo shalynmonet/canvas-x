@@ -29,16 +29,59 @@ const INBOUND_EVENT = "message.received";
 const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
 
 
-function expectedSecret(): string | null {
-  return process.env["LINQ_WEBHOOK_SECRET"] ?? process.env["LINQ_API_KEY"] ?? null;
-}
-
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+
+/**
+ * Linq signs webhooks with the Standard Webhooks scheme:
+ *   webhook-id, webhook-timestamp, webhook-signature: "v1,<base64 HMAC-SHA256>"
+ * signed over `${id}.${timestamp}.${rawBody}` using the endpoint signing secret
+ * (LINQ_WEBHOOK_SECRET, usually prefixed `whsec_`) — NOT the Linq API key.
+ */
+async function verifyStandardWebhook(
+  rawBody: string,
+  id: string,
+  timestamp: string,
+  signatureHeader: string,
+): Promise<{ ok: boolean; reason?: string; computed?: string }> {
+  const raw = process.env["LINQ_WEBHOOK_SECRET"];
+  if (!raw) return { ok: false, reason: "LINQ_WEBHOOK_SECRET is not set" };
+
+  const secretBytes = raw.startsWith("whsec_")
+    ? Uint8Array.from(atob(raw.slice("whsec_".length)), (c) => c.charCodeAt(0))
+    : new TextEncoder().encode(raw);
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    secretBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`${id}.${timestamp}.${rawBody}`),
+  );
+  const computed = btoa(String.fromCharCode(...new Uint8Array(mac)));
+
+  // Header may carry several space-separated versioned signatures.
+  const candidates = signatureHeader
+    .split(" ")
+    .map((part) => part.trim())
+    .filter((part) => part.startsWith("v1,"))
+    .map((part) => part.slice(3));
+
+  if (candidates.length === 0) return { ok: false, reason: "no v1 signature in header", computed };
+
+  const match = candidates.some((candidate) => timingSafeEqual(candidate, computed));
+  return match ? { ok: true, computed } : { ok: false, reason: "signature mismatch", computed };
+}
+
 
 async function sendLinqMessage(phone: string, message: string) {
   const key = process.env["LINQ_API_KEY"];
