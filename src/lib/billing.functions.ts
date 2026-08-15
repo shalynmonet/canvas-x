@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { LIFETIME_OFFER_ENDS_AT } from "@/lib/canvas";
 
 const stripeForm = (params: Record<string, string>) =>
   new URLSearchParams(params).toString();
