@@ -156,6 +156,7 @@ function HomeScreen() {
                 <Link
                   to="/collabs/$id"
                   params={{ id: collab.id }}
+                  aria-label={`${collab.brand_name} collab details`}
                   className="flex items-center gap-0.5 text-xs font-medium text-accent"
                 >
                   Details <ChevronRight className="size-3.5" />
