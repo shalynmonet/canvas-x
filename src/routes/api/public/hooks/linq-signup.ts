@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { isLifetimeOfferLive } from "@/lib/canvas";
 
 /**
  * Signup Agent — inbound Linq webhook.
