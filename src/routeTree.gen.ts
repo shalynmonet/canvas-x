@@ -13,7 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as UpgradeRouteImport } from './routes/upgrade'
+import { Route as AuthenticatedCalibrationRouteImport } from './routes/_authenticated/calibration'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedCollabsIdRouteImport } from './routes/_authenticated/collabs.$id'
 import { Route as AuthenticatedCollabsNewRouteImport } from './routes/_authenticated/collabs.new'
 import { Route as ApiPublicHooksRemindersRouteImport } from './routes/api/public/hooks/reminders'
 
@@ -36,9 +39,25 @@ const UpgradeRoute = UpgradeRouteImport.update({
   path: '/upgrade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCalibrationRoute =
+  AuthenticatedCalibrationRouteImport.update({
+    id: '/calibration',
+    path: '/calibration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCollabsIdRoute = AuthenticatedCollabsIdRouteImport.update({
+  id: '/collabs/$id',
+  path: '/collabs/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCollabsNewRoute = AuthenticatedCollabsNewRouteImport.update({
@@ -56,7 +75,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/upgrade': typeof UpgradeRoute
+  '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -64,7 +86,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/upgrade': typeof UpgradeRoute
+  '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -74,7 +99,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/upgrade': typeof UpgradeRoute
+  '/_authenticated/calibration': typeof AuthenticatedCalibrationRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/_authenticated/collabs/new': typeof AuthenticatedCollabsNewRoute
   '/api/public/hooks/reminders': typeof ApiPublicHooksRemindersRoute
 }
@@ -84,7 +112,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/upgrade'
+    | '/calibration'
     | '/home'
+    | '/settings'
+    | '/collabs/$id'
     | '/collabs/new'
     | '/api/public/hooks/reminders'
   fileRoutesByTo: FileRoutesByTo
@@ -92,7 +123,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/upgrade'
+    | '/calibration'
     | '/home'
+    | '/settings'
+    | '/collabs/$id'
     | '/collabs/new'
     | '/api/public/hooks/reminders'
   id:
@@ -101,7 +135,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/upgrade'
+    | '/_authenticated/calibration'
     | '/_authenticated/home'
+    | '/_authenticated/settings'
+    | '/_authenticated/collabs/$id'
     | '/_authenticated/collabs/new'
     | '/api/public/hooks/reminders'
   fileRoutesById: FileRoutesById
@@ -144,11 +181,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpgradeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/calibration': {
+      id: '/_authenticated/calibration'
+      path: '/calibration'
+      fullPath: '/calibration'
+      preLoaderRoute: typeof AuthenticatedCalibrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/collabs/$id': {
+      id: '/_authenticated/collabs/$id'
+      path: '/collabs/$id'
+      fullPath: '/collabs/$id'
+      preLoaderRoute: typeof AuthenticatedCollabsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/collabs/new': {
@@ -169,12 +227,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCalibrationRoute: typeof AuthenticatedCalibrationRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedCollabsIdRoute: typeof AuthenticatedCollabsIdRoute
   AuthenticatedCollabsNewRoute: typeof AuthenticatedCollabsNewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCalibrationRoute: AuthenticatedCalibrationRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedCollabsIdRoute: AuthenticatedCollabsIdRoute,
   AuthenticatedCollabsNewRoute: AuthenticatedCollabsNewRoute,
 }
 
