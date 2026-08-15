@@ -37,7 +37,7 @@ async function sendLinqMessage(phone: string, message: string) {
   const key = process.env["LINQ_API_KEY"];
   if (!key) return false;
   try {
-    const res = await fetch("https://api.linq.app/v1/messages", {
+    const res = await fetch("https://api.linqapp.com/v1/messages", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ to: phone, channel: "imessage", text: message }),
