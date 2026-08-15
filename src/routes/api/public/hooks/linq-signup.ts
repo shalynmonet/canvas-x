@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { isLifetimeOfferLive } from "@/lib/canvas";
 
 /**
  * Signup Agent — inbound Linq webhook.
@@ -19,7 +20,7 @@ const payloadSchema = z.object({
   body: z.string().max(2000).optional(),
 });
 
-const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "trial", "yes"];
+const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
 
 function expectedSecret(): string | null {
   return process.env["LINQ_WEBHOOK_SECRET"] ?? process.env["LINQ_API_KEY"] ?? null;
@@ -86,6 +87,7 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
 
         const origin = new URL(request.url).origin;
         const signupUrl = `${origin}/auth`;
+        const upgradeUrl = `${origin}/upgrade`;
 
         await supabase.from("signup_leads").insert({
           phone,
@@ -96,12 +98,22 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
           status: isSignup ? "invited" : "new",
         });
 
+        const isLifetimeIntent = message.toLowerCase().includes("canvas");
+        const lifetimeLive = isLifetimeOfferLive();
+
         let replied = false;
         if (isSignup && phone) {
-          replied = await sendLinqMessage(
-            phone,
-            `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
-          );
+          if (isLifetimeIntent && lifetimeLive) {
+            replied = await sendLinqMessage(
+              phone,
+              `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`,
+            );
+          } else {
+            replied = await sendLinqMessage(
+              phone,
+              `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
+            );
+          }
         }
 
         return Response.json({ ok: true, lead: true, signup_intent: isSignup, replied });
