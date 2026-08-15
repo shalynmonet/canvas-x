@@ -136,9 +136,23 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
           }),
         );
 
+        // TEMPORARY (hackathon only): Linq's webhook signing secret is unconfirmed,
+        // so a failed/absent signature check does NOT reject the request. This leaves
+        // the endpoint open to spoofed posts.
+        // TODO: before any production use, set LINQ_WEBHOOK_SECRET and restore the
+        // hard 401 below so unverified requests are rejected.
+        const ENFORCE_SIGNATURE = false;
         if (!verdict.ok) {
-          return new Response("Unauthorized", { status: 401 });
+          console.warn(
+            "[linq-signup] SECURITY: proceeding with UNVERIFIED webhook —",
+            verdict.reason,
+            "— signature verification must be re-enabled (set LINQ_WEBHOOK_SECRET and flip ENFORCE_SIGNATURE) before production use beyond the hackathon.",
+          );
+          if (ENFORCE_SIGNATURE) {
+            return new Response("Unauthorized", { status: 401 });
+          }
         }
+
 
         let raw: unknown;
         try {
