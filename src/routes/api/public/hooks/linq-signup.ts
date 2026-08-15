@@ -111,20 +111,50 @@ async function verifyStandardWebhook(
 }
 
 
-async function sendLinqMessage(phone: string, message: string) {
+async function sendLinqMessage(
+  target: { phone: string | null; chatId: string | null },
+  message: string,
+): Promise<{ ok: boolean; detail: string }> {
   const key = process.env["LINQ_API_KEY"];
-  if (!key) return false;
-  try {
-    const res = await fetch("https://api.linqapp.com/v1/messages", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ to: phone, channel: "imessage", text: message }),
+  if (!key) return { ok: false, detail: "LINQ_API_KEY not set" };
+
+  // Prefer replying inside the existing chat thread; fall back to handle send.
+  const attempts: Array<{ url: string; body: Record<string, unknown> }> = [];
+  if (target.chatId) {
+    attempts.push({
+      url: `https://api.linqapp.com/v1/chats/${target.chatId}/messages`,
+      body: { parts: [{ type: "text", value: message }] },
     });
-    return res.ok;
-  } catch {
-    return false;
   }
+  if (target.phone) {
+    attempts.push({
+      url: "https://api.linqapp.com/v1/messages",
+      body: { to: target.phone, channel: "imessage", text: message },
+    });
+  }
+  if (attempts.length === 0) return { ok: false, detail: "no chat id or phone in payload" };
+
+  const details: string[] = [];
+  for (const attempt of attempts) {
+    try {
+      const res = await fetch(attempt.url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify(attempt.body),
+      });
+      const text = (await res.text()).slice(0, 300);
+      console.log("[linq-signup] send attempt", JSON.stringify({ url: attempt.url, status: res.status, body: text }));
+      if (res.ok) return { ok: true, detail: `${res.status} ${attempt.url}` };
+      details.push(`${attempt.url} -> ${res.status} ${text}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log("[linq-signup] send threw", JSON.stringify({ url: attempt.url, error: msg }));
+      details.push(`${attempt.url} -> threw ${msg}`);
+    }
+  }
+  return { ok: false, detail: details.join(" | ") };
 }
+
 
 export const Route = createFileRoute("/api/public/hooks/linq-signup")({
   server: {
