@@ -75,21 +75,20 @@ function Landing() {
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
-            to="/auth"
+            to="/upgrade"
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Start 7-day free trial
+            Claim your ${LIFETIME_PRICE_USD} lifetime access
           </Link>
           <Link
-            to="/upgrade"
+            to="/auth"
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary"
           >
-            See plans
+            Start 7-day trial, then ${YEARLY_PRICE_USD}/year
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Then ${YEARLY_PRICE_USD}/year — or just ${LIFETIME_PRICE_USD} for lifetime access while the
-          offer lasts.
+          Or start a 7-day trial, then ${YEARLY_PRICE_USD}/year.
         </p>
 
 
