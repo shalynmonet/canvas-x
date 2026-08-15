@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useCalibration } from "@/hooks/use-canvas";
 import {
   PAY_FREQUENCIES,
-  matchCollabType,
+  summarizeCalibration,
   toISODate,
   warmupEndDate,
   type Collab,
