@@ -215,15 +215,20 @@ function SettingsScreen() {
         <h2 className="text-lg font-semibold">Subscription</h2>
         {profile && (
           <p className="text-sm text-muted-foreground">
-            Status: <span className="font-medium text-foreground">{profile.subscription_status}</span>
+            Status:{" "}
+            <span className="font-medium text-foreground">
+              {profile.subscription_status === "lifetime"
+                ? "lifetime access"
+                : profile.subscription_status}
+            </span>
             {profile.subscription_status === "trialing" &&
               ` — ${trialDaysLeft(profile)} day(s) of trial left`}
           </p>
         )}
-        {profile?.subscription_status !== "active" && (
-          <UpgradeButton label={`Subscribe — $${MONTHLY_PRICE_USD}/mo`} />
-        )}
+        {profile?.subscription_status !== "active" &&
+          profile?.subscription_status !== "lifetime" && <PlanOptions />}
       </section>
+
     </div>
   );
 }
