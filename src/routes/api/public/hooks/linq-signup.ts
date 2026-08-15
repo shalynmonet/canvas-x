@@ -102,54 +102,51 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = expectedSecret();
-        const sigHeader = request.headers.get("x-linq-signature");
-        const secretHeader = request.headers.get("x-webhook-secret");
-        const authHeader = request.headers.get("authorization");
-        const provided =
-          sigHeader ?? secretHeader ?? (authHeader ?? "").replace(/^Bearer\s+/i, "");
+        const id = request.headers.get("webhook-id") ?? "";
+        const timestamp =
+          request.headers.get("webhook-timestamp") ??
+          request.headers.get("x-webhook-timestamp") ??
+          "";
+        const signature =
+          request.headers.get("webhook-signature") ??
+          request.headers.get("x-webhook-signature") ??
+          "";
 
-        // Diagnostic: never log full secret values, only shape + fingerprint.
+        const rawBody = await request.text();
+
+        const verdict =
+          id && timestamp && signature
+            ? await verifyStandardWebhook(rawBody, id, timestamp, signature)
+            : { ok: false, reason: "missing webhook-id / timestamp / signature headers" };
+
+        // Diagnostic: fingerprints only, never full secret or signature values.
         const mask = (v: string | null | undefined) =>
-          !v ? null : { len: v.length, head: v.slice(0, 4), tail: v.slice(-4) };
+          !v ? null : { len: v.length, head: v.slice(0, 6), tail: v.slice(-6) };
         console.log(
-          "[linq-signup] inbound auth debug",
+          "[linq-signup] signature check",
           JSON.stringify({
-            allHeaderNames: [...request.headers.keys()],
-            headers: {
-              "x-linq-signature": mask(sigHeader),
-              "x-webhook-secret": mask(secretHeader),
-              authorization: mask(authHeader),
-            },
-            providedSource: sigHeader
-              ? "x-linq-signature"
-              : secretHeader
-                ? "x-webhook-secret"
-                : authHeader
-                  ? "authorization"
-                  : "none",
-            provided: mask(provided),
-            expected: mask(secret),
-            expectedFrom: process.env["LINQ_WEBHOOK_SECRET"]
-              ? "LINQ_WEBHOOK_SECRET"
-              : process.env["LINQ_API_KEY"]
-                ? "LINQ_API_KEY"
-                : "unset",
-            match: Boolean(secret && provided && timingSafeEqual(provided, secret)),
+            event: request.headers.get("x-webhook-event"),
+            hasId: Boolean(id),
+            timestamp,
+            providedSignature: mask(signature),
+            computedSignature: mask(verdict.computed),
+            secretConfigured: Boolean(process.env["LINQ_WEBHOOK_SECRET"]),
+            ok: verdict.ok,
+            reason: verdict.reason ?? null,
           }),
         );
 
-        if (!secret || !provided || !timingSafeEqual(provided, secret)) {
+        if (!verdict.ok) {
           return new Response("Unauthorized", { status: 401 });
         }
 
-
         let raw: unknown;
         try {
-          raw = await request.json();
+          raw = JSON.parse(rawBody);
         } catch {
           return new Response("Invalid JSON", { status: 400 });
         }
+
 
         const parsed = payloadSchema.safeParse(raw);
         if (!parsed.success) {
