@@ -113,18 +113,22 @@ export const confirmCheckout = createServerFn({ method: "POST" })
     const paid = session["payment_status"] === "paid" || session["status"] === "complete";
     if (!paid) return { unlocked: false, status: String(session["status"] ?? "open") };
 
+    const isLifetime = session["mode"] === "payment";
+    const status = isLifetime ? "lifetime" : "active";
+
     await supabase
       .from("profiles")
       .update({
-        subscription_status: "active",
+        subscription_status: status,
         stripe_subscription_id: session["subscription"] ? String(session["subscription"]) : null,
         stripe_customer_id: session["customer"] ? String(session["customer"]) : null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", userId);
 
-    return { unlocked: true, status: "active" };
+    return { unlocked: true, status };
   });
+
 
 /** Re-reads the live subscription from Stripe and syncs subscription_status. */
 export const syncSubscription = createServerFn({ method: "POST" })
