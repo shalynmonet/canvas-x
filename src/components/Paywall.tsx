@@ -10,7 +10,7 @@ type Plan = "yearly" | "lifetime";
 
 export function UpgradeButton({
   label = "Upgrade to continue",
-  plan = "standard",
+  plan = "yearly",
   variant = "default",
 }: {
   label?: string;
