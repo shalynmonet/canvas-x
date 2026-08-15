@@ -11,22 +11,50 @@ import { isLifetimeOfferLive } from "@/lib/canvas";
  * with the signup link. Everything else is stored for follow-up.
  */
 
-const payloadSchema = z.object({
-  event: z.string().max(120).optional(),
-  type: z.string().max(120).optional(),
-  phone: z.string().min(5).max(32).optional(),
-  from: z.string().min(5).max(32).optional(),
-  name: z.string().max(120).optional(),
-  message: z.string().max(2000).optional(),
-  text: z.string().max(2000).optional(),
-  body: z.string().max(2000).optional(),
-  attachments: z.array(z.unknown()).max(20).optional(),
-});
+const payloadSchema = z
+  .object({
+    // flat/legacy shape
+    event: z.string().max(120).optional(),
+    type: z.string().max(120).optional(),
+    phone: z.string().min(5).max(32).optional(),
+    from: z.string().min(5).max(32).optional(),
+    name: z.string().max(120).optional(),
+    message: z.string().max(2000).optional(),
+    text: z.string().max(2000).optional(),
+    body: z.string().max(2000).optional(),
+    attachments: z.array(z.unknown()).max(20).optional(),
+    // Linq v3 shape
+    event_type: z.string().max(120).optional(),
+    data: z
+      .object({
+        direction: z.string().max(32).optional(),
+        chat: z.object({ id: z.string().max(64).optional() }).partial().passthrough().optional(),
+        sender_handle: z
+          .object({ handle: z.string().max(32).optional(), is_me: z.boolean().optional() })
+          .partial()
+          .passthrough()
+          .optional(),
+        parts: z
+          .array(
+            z
+              .object({ type: z.string().max(32).optional(), value: z.string().max(4000).optional() })
+              .partial()
+              .passthrough(),
+          )
+          .max(50)
+          .optional(),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 /** Linq webhook event we subscribe to: carries full inbound message + attachments. */
 const INBOUND_EVENT = "message.received";
 
 const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
+
 
 
 function timingSafeEqual(a: string, b: string): boolean {
