@@ -82,6 +82,10 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
         }
 
         const data = parsed.data;
+        const event = data.event ?? data.type ?? null;
+        if (event && event !== INBOUND_EVENT) {
+          return Response.json({ ok: true, ignored: true, event });
+        }
         const phone = data.phone ?? data.from ?? null;
         const message = data.message ?? data.text ?? data.body ?? "";
         const isSignup = SIGNUP_WORDS.some((w) => message.toLowerCase().includes(w));
