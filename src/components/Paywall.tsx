@@ -74,15 +74,14 @@ export function PlanOptions() {
       )}
 
       <section className="card-surface space-y-3 p-5 text-left">
-        <h2 className="text-lg font-semibold">${STANDARD_PRICE_USD} lifetime</h2>
+        <h2 className="text-lg font-semibold">${YEARLY_PRICE_USD}/year</h2>
         <p className="text-sm text-muted-foreground">
-          Start with a 7-day free trial, then one payment of ${STANDARD_PRICE_USD} for lifetime
-          access. No renewals.
+          Start with a 7-day free trial, then ${YEARLY_PRICE_USD}/year. Cancel anytime.
         </p>
         <UpgradeButton
-          plan="standard"
+          plan="yearly"
           variant={live ? "outline" : "default"}
-          label={`Get lifetime access — $${STANDARD_PRICE_USD}`}
+          label={`Start trial — $${YEARLY_PRICE_USD}/year`}
         />
       </section>
     </div>
@@ -97,8 +96,8 @@ export function Paywall() {
       </p>
       <h1 className="text-3xl font-bold">Keep every collab on track</h1>
       <p className="text-sm text-muted-foreground">
-        Your free trial covers the first 7 days. One payment of ${STANDARD_PRICE_USD} for lifetime
-        access — or just ${LIFETIME_PRICE_USD} while the launch offer is live.
+        Your free trial covers the first 7 days. After that, ${YEARLY_PRICE_USD}/year — or just
+        ${LIFETIME_PRICE_USD} for lifetime access while the launch offer is live.
       </p>
       <ul className="card-surface space-y-2 p-5 text-left text-sm">
         {perks.map((perk) => (
