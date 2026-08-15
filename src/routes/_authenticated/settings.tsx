@@ -183,6 +183,29 @@ function SettingsScreen() {
             }
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="timezone">Reminder timezone</Label>
+          <div className="flex gap-2">
+            <Input
+              id="timezone"
+              value={values.timezone}
+              onChange={(e) => setValues((v) => ({ ...v, timezone: e.target.value }))}
+              placeholder="America/Chicago"
+              className="font-mono text-sm"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setValues((v) => ({ ...v, timezone: detectTimezone() }))}
+            >
+              Detect
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Reminders are sent around this time in your local timezone.
+          </p>
+        </div>
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
           {busy ? "Saving…" : "Save settings"}
         </Button>
