@@ -37,6 +37,23 @@ export const Route = createFileRoute("/_authenticated/settings")({
   ),
 });
 
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return "UTC";
+  }
+}
+
+function isValidTimezone(tz: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
   phone: z
@@ -46,6 +63,7 @@ const schema = z.object({
     .regex(/^[+0-9()\-.\s]*$/, "Digits, spaces and + only"),
   reminder_time: z.string().max(5),
   reminder_enabled: z.boolean(),
+  timezone: z.string().refine(isValidTimezone, "Unknown timezone"),
 });
 
 function SettingsScreen() {
@@ -57,6 +75,7 @@ function SettingsScreen() {
     phone: "",
     reminder_time: "",
     reminder_enabled: false,
+    timezone: "UTC",
   });
   const [busy, setBusy] = useState(false);
 
@@ -67,6 +86,7 @@ function SettingsScreen() {
       phone: profile.phone ?? "",
       reminder_time: profile.reminder_time ? profile.reminder_time.slice(0, 5) : "",
       reminder_enabled: profile.reminder_enabled,
+      timezone: profile.timezone || detectTimezone(),
     });
   }, [profile]);
 
@@ -94,6 +114,7 @@ function SettingsScreen() {
         phone: parsed.data.phone || null,
         reminder_time: parsed.data.reminder_time || null,
         reminder_enabled: parsed.data.reminder_time ? parsed.data.reminder_enabled : false,
+        timezone: parsed.data.timezone || "UTC",
         updated_at: new Date().toISOString(),
       })
       .eq("id", profile!.id);
