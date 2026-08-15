@@ -98,7 +98,11 @@ export function PlanOptions() {
             countdown hits zero.
           </p>
           <OfferCountdown />
-          <UpgradeButton plan="lifetime" label={`Get lifetime access — $${LIFETIME_PRICE_USD}`} />
+          <UpgradeButton
+            plan="lifetime"
+            autoStart={autoPlan === "lifetime"}
+            label={`Get lifetime access — $${LIFETIME_PRICE_USD}`}
+          />
         </section>
       )}
 
@@ -109,6 +113,7 @@ export function PlanOptions() {
         </p>
         <UpgradeButton
           plan="yearly"
+          autoStart={autoPlan === "yearly"}
           variant={live ? "outline" : "default"}
           label={`Start trial — $${YEARLY_PRICE_USD}/year`}
         />
