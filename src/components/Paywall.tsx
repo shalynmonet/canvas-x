@@ -97,8 +97,8 @@ export function Paywall() {
       </p>
       <h1 className="text-3xl font-bold">Keep every collab on track</h1>
       <p className="text-sm text-muted-foreground">
-        Your free trial covers the first 7 days. Pick the plan that fits — ${YEARLY_PRICE_USD} a
-        year, or ${LIFETIME_PRICE_USD} once for lifetime access while the offer is live.
+        Your free trial covers the first 7 days. One payment of ${STANDARD_PRICE_USD} for lifetime
+        access — or just ${LIFETIME_PRICE_USD} while the launch offer is live.
       </p>
       <ul className="card-surface space-y-2 p-5 text-left text-sm">
         {perks.map((perk) => (
