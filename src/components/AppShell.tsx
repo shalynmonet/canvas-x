@@ -23,8 +23,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+    <div className="min-h-dvh bg-background pb-[calc(8rem+env(safe-area-inset-bottom))]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
+      >
+        Skip to main content
+      </a>
+      <header className="sticky top-0 z-30 border-b border-border bg-background backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link to="/home" className="font-display text-lg font-bold tracking-tight">
             CanvasX
@@ -38,15 +44,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-5">{children}</main>
+      <main id="main-content" className="mx-auto max-w-2xl px-4 py-5">
+        {children}
+      </main>
 
-      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+      <nav
+        aria-label="Main"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]"
+      >
         <div className="mx-auto flex max-w-2xl">
           {tabs.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
-              className="pointer-events-auto flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium text-muted-foreground transition-colors"
+              className="pointer-events-auto flex min-h-11 flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium text-muted-foreground transition-colors"
               activeProps={{ className: "text-accent" }}
               activeOptions={{ exact: to === "/home" }}
             >
