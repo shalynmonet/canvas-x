@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -41,8 +41,8 @@ const signupSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const requestedPlan = new URLSearchParams(location.search).get("plan");
+  const href = useRouterState({ select: (state) => state.location.href });
+  const requestedPlan = new URL(href, "http://canvasx.local").searchParams.get("plan");
   const plan = requestedPlan === "lifetime" || requestedPlan === "yearly" ? requestedPlan : null;
   const isLifetime = plan === "lifetime";
 
