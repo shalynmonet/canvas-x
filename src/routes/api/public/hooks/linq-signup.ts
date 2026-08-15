@@ -11,22 +11,50 @@ import { isLifetimeOfferLive } from "@/lib/canvas";
  * with the signup link. Everything else is stored for follow-up.
  */
 
-const payloadSchema = z.object({
-  event: z.string().max(120).optional(),
-  type: z.string().max(120).optional(),
-  phone: z.string().min(5).max(32).optional(),
-  from: z.string().min(5).max(32).optional(),
-  name: z.string().max(120).optional(),
-  message: z.string().max(2000).optional(),
-  text: z.string().max(2000).optional(),
-  body: z.string().max(2000).optional(),
-  attachments: z.array(z.unknown()).max(20).optional(),
-});
+const payloadSchema = z
+  .object({
+    // flat/legacy shape
+    event: z.string().max(120).optional(),
+    type: z.string().max(120).optional(),
+    phone: z.string().min(5).max(32).optional(),
+    from: z.string().min(5).max(32).optional(),
+    name: z.string().max(120).optional(),
+    message: z.string().max(2000).optional(),
+    text: z.string().max(2000).optional(),
+    body: z.string().max(2000).optional(),
+    attachments: z.array(z.unknown()).max(20).optional(),
+    // Linq v3 shape
+    event_type: z.string().max(120).optional(),
+    data: z
+      .object({
+        direction: z.string().max(32).optional(),
+        chat: z.object({ id: z.string().max(64).optional() }).partial().passthrough().optional(),
+        sender_handle: z
+          .object({ handle: z.string().max(32).optional(), is_me: z.boolean().optional() })
+          .partial()
+          .passthrough()
+          .optional(),
+        parts: z
+          .array(
+            z
+              .object({ type: z.string().max(32).optional(), value: z.string().max(4000).optional() })
+              .partial()
+              .passthrough(),
+          )
+          .max(50)
+          .optional(),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 /** Linq webhook event we subscribe to: carries full inbound message + attachments. */
 const INBOUND_EVENT = "message.received";
 
 const SIGNUP_WORDS = ["start", "signup", "sign up", "join", "canvasx", "canvas", "trial", "yes"];
+
 
 
 function timingSafeEqual(a: string, b: string): boolean {
@@ -83,20 +111,52 @@ async function verifyStandardWebhook(
 }
 
 
-async function sendLinqMessage(phone: string, message: string) {
+async function sendLinqMessage(
+  target: { phone: string | null; chatId: string | null },
+  message: string,
+): Promise<{ ok: boolean; detail: string }> {
   const key = process.env["LINQ_API_KEY"];
-  if (!key) return false;
-  try {
-    const res = await fetch("https://api.linqapp.com/v1/messages", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ to: phone, channel: "imessage", text: message }),
+  if (!key) return { ok: false, detail: "LINQ_API_KEY not set" };
+
+  // Prefer replying inside the existing chat thread; fall back to handle send.
+  const attempts: Array<{ url: string; body: Record<string, unknown> }> = [];
+  const messageBody = { message: { parts: [{ type: "text", value: message }] } };
+  if (target.chatId) {
+    attempts.push({
+      url: `https://api.linqapp.com/v3/chats/${target.chatId}/messages`,
+      body: messageBody,
     });
-    return res.ok;
-  } catch {
-    return false;
   }
+  if (target.phone) {
+    attempts.push({
+      url: "https://api.linqapp.com/v3/messages",
+      body: { to: [target.phone], ...messageBody },
+    });
+  }
+
+  if (attempts.length === 0) return { ok: false, detail: "no chat id or phone in payload" };
+
+  const details: string[] = [];
+  for (const attempt of attempts) {
+    try {
+      const res = await fetch(attempt.url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify(attempt.body),
+      });
+      const text = (await res.text()).slice(0, 300);
+      console.log("[linq-signup] send attempt", JSON.stringify({ url: attempt.url, status: res.status, body: text }));
+      if (res.ok) return { ok: true, detail: `${res.status} ${attempt.url}` };
+      details.push(`${attempt.url} -> ${res.status} ${text}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log("[linq-signup] send threw", JSON.stringify({ url: attempt.url, error: msg }));
+      details.push(`${attempt.url} -> threw ${msg}`);
+    }
+  }
+  return { ok: false, detail: details.join(" | ") };
 }
+
 
 export const Route = createFileRoute("/api/public/hooks/linq-signup")({
   server: {
@@ -169,14 +229,46 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
 
         const data = parsed.data;
         const event =
-          data.event ?? data.type ?? request.headers.get("x-webhook-event") ?? null;
+          data.event ??
+          data.type ??
+          data.event_type ??
+          request.headers.get("x-webhook-event") ??
+          null;
 
         if (event && event !== INBOUND_EVENT) {
           return Response.json({ ok: true, ignored: true, event });
         }
-        const phone = data.phone ?? data.from ?? null;
-        const message = data.message ?? data.text ?? data.body ?? "";
-        const isSignup = SIGNUP_WORDS.some((w) => message.toLowerCase().includes(w));
+
+        const nested = data.data;
+        const nestedText = (nested?.parts ?? [])
+          .filter((p) => (p.type ?? "text") === "text")
+          .map((p) => p.value ?? "")
+          .join(" ")
+          .trim();
+
+        const phone =
+          data.phone ?? data.from ?? nested?.sender_handle?.handle ?? null;
+        const chatId = nested?.chat?.id ?? null;
+        const message = data.message ?? data.text ?? data.body ?? nestedText ?? "";
+
+        // Never react to our own outbound messages.
+        const isOutbound =
+          nested?.direction === "outbound" || nested?.sender_handle?.is_me === true;
+
+        const isSignup =
+          !isOutbound && SIGNUP_WORDS.some((w) => message.toLowerCase().includes(w));
+
+        console.log(
+          "[linq-signup] parsed inbound",
+          JSON.stringify({
+            event,
+            hasPhone: Boolean(phone),
+            hasChatId: Boolean(chatId),
+            messageLength: message.length,
+            isOutbound,
+            isSignup,
+          }),
+        );
 
         const supabase = createClient(
           process.env["SUPABASE_URL"]!,
@@ -200,22 +292,23 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
         const isLifetimeIntent = message.toLowerCase().includes("canvas");
         const lifetimeLive = isLifetimeOfferLive();
 
-        let replied = false;
-        if (isSignup && phone) {
-          if (isLifetimeIntent && lifetimeLive) {
-            replied = await sendLinqMessage(
-              phone,
-              `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`,
-            );
-          } else {
-            replied = await sendLinqMessage(
-              phone,
-              `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`,
-            );
-          }
+        let send: { ok: boolean; detail: string } = { ok: false, detail: "not attempted" };
+        if (isSignup && (phone || chatId)) {
+          const text =
+            isLifetimeIntent && lifetimeLive
+              ? `CanvasX lifetime access — only $1 today! Claim it before 7:45pm Chicago time: ${upgradeUrl}`
+              : `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`;
+          send = await sendLinqMessage({ phone, chatId }, text);
         }
 
-        return Response.json({ ok: true, lead: true, signup_intent: isSignup, replied });
+        return Response.json({
+          ok: true,
+          lead: true,
+          signup_intent: isSignup,
+          replied: send.ok,
+          send_detail: send.detail,
+        });
+
       },
     },
   },
