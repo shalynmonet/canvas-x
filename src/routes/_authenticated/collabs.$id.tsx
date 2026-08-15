@@ -94,6 +94,10 @@ function CollabDetail() {
           {warmupEndDate(collab.start_date, collab.warmup_days)} · {collab.pay_frequency} ·{" "}
           {collab.status}
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {collab.daily_engagement_minutes} min daily engagement · {collab.min_daily_posts} post
+          {collab.min_daily_posts === 1 ? "" : "s"} per day
+        </p>
       </div>
 
       <section className="card-surface bg-primary p-5 text-primary-foreground">
@@ -133,13 +137,18 @@ function CollabDetail() {
           )}
           {Array.from({ length: elapsedDays }, (_, i) => i + 1).map((day) => (
             <div key={day} className="flex items-center gap-3">
-              <span className="w-16 text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor={`views-day-${day}`}
+                className="w-16 text-xs font-semibold text-muted-foreground"
+              >
                 Day {day}
-              </span>
+              </label>
               <Input
+                id={`views-day-${day}`}
                 type="number"
                 min={0}
                 inputMode="numeric"
+                aria-label={`Views logged on day ${day}`}
                 defaultValue={viewByDay.get(day)?.view_count ?? ""}
                 placeholder="views"
                 onBlur={(e) => saveViews(day, Number(e.target.value))}

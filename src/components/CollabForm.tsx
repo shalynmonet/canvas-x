@@ -119,12 +119,16 @@ export function CollabForm({
     }
   }
 
-  const badge = match ? (
-    <span className="inline-block rounded-full bg-accent/12 px-2.5 py-1 text-[11px] font-semibold text-accent">
-      Recommended based on {match.responseCount} creator response
-      {match.responseCount === 1 ? "" : "s"} via Terac
+  const badge = (
+    <span className="block min-h-[26px]">
+      {match ? (
+        <span className="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[11px] font-semibold text-accent">
+          Recommended based on {match.responseCount} creator response
+          {match.responseCount === 1 ? "" : "s"} via Terac
+        </span>
+      ) : null}
     </span>
-  ) : null;
+  );
 
   return (
     <form onSubmit={submit} className="space-y-5 pb-6">
