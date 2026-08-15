@@ -5,35 +5,39 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useCalibration } from "@/hooks/use-canvas";
+import { summarizeCalibration } from "@/lib/canvas";
 import { distributeSurveyViaTerac } from "@/lib/terac.functions";
 
 export const Route = createFileRoute("/_authenticated/calibration")({
   head: () => ({
     meta: [
-      { title: "Calibration results — CanvasX" },
+      { title: "Recommendations — CanvasX" },
       {
         name: "description",
         content:
-          "Creator-calibrated warmup, engagement and posting averages per collab type, powered by Terac respondents.",
+          "Creator-sourced recommendations for warmup length, daily engagement time and minimum daily posts on brand collabs.",
       },
-      { property: "og:title", content: "Calibration results — CanvasX" },
+      { property: "og:title", content: "Recommendations — CanvasX" },
       {
         property: "og:description",
         content: "Real creator averages that power CanvasX's suggested collab defaults.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
     <AppShell>
-      <CalibrationScreen />
+      <RecommendationsScreen />
     </AppShell>
   ),
 });
 
-function CalibrationScreen() {
+function RecommendationsScreen() {
   const { data: rows = [] } = useCalibration();
   const distribute = useServerFn(distributeSurveyViaTerac);
   const [busy, setBusy] = useState(false);
+  const summary = summarizeCalibration(rows);
 
   async function send() {
     setBusy(true);
@@ -50,39 +54,42 @@ function CalibrationScreen() {
     }
   }
 
-  const total = rows.reduce((sum, r) => sum + r.response_count, 0);
+  const round = (n: number | null, step = 1) =>
+    n === null ? null : Math.round(n / step) * step;
+
+  const warmup = round(summary.warmupDays);
+  const minutes = round(summary.engagementMinutes, 5);
+  const posts = round(summary.minPosts);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Calibration</h1>
+        <h1 className="text-3xl font-bold">Recommendations</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {total === 0
-            ? "No creator responses yet — collab defaults are blank/generic until the survey returns."
-            : `${total} creator responses via Terac are now shaping suggested defaults.`}
+          {summary.responseCount === 0
+            ? "No creator responses yet — collab defaults stay blank until the Terac survey returns."
+            : `Summary of ${summary.responseCount} creator response${
+                summary.responseCount === 1 ? "" : "s"
+              } collected via Terac.`}
         </p>
       </div>
 
-      <div className="space-y-3">
-        {rows.map((row) => (
-          <section key={row.collab_type} className="card-surface p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold capitalize">{row.collab_type}</h2>
-              <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold">
-                {row.response_count} response{row.response_count === 1 ? "" : "s"}
-              </span>
-            </div>
-            <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
-              <Stat label="Warmup" value={row.avg_warmup_days ? `${row.avg_warmup_days}d` : "—"} />
-              <Stat
-                label="Engagement"
-                value={row.avg_engagement_minutes ? `${row.avg_engagement_minutes}m` : "—"}
-              />
-              <Stat label="Min posts" value={row.avg_min_posts ? `${row.avg_min_posts}` : "—"} />
-            </dl>
-          </section>
-        ))}
-      </div>
+      <section className="card-surface p-4">
+        <h2 className="text-base font-semibold">What creators recommend</h2>
+        <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
+          <Stat label="Warmup" value={warmup ? `${warmup}d` : "—"} />
+          <Stat label="Engagement" value={minutes ? `${minutes}m` : "—"} />
+          <Stat label="Min posts" value={posts !== null ? `${posts}` : "—"} />
+        </dl>
+        {summary.responseCount > 0 && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Creators warm up for about {summary.warmupDays?.toFixed(1)} days, then spend around{" "}
+            {Math.round(summary.engagementMinutes ?? 0)} minutes a day engaging and post about{" "}
+            {summary.minPosts?.toFixed(1)} times a day. New collabs are pre-filled with these
+            numbers.
+          </p>
+        )}
+      </section>
 
       <div className="space-y-3">
         <Button className="w-full" size="lg" disabled={busy} onClick={send}>

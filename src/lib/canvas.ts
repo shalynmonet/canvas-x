@@ -158,3 +158,38 @@ export function matchCollabType(source: string): string | null {
   if (/(agency|manager|management)/.test(s)) return "agency";
   return null;
 }
+
+/** Single bucket used now that the survey no longer classifies brand type. */
+export const GENERAL_COLLAB_TYPE = "all collabs";
+
+export interface CalibrationSummary {
+  responseCount: number;
+  warmupDays: number | null;
+  engagementMinutes: number | null;
+  minPosts: number | null;
+}
+
+/** Response-weighted average across every calibration bucket. */
+export function summarizeCalibration(rows: CalibrationRow[]): CalibrationSummary {
+  const total = rows.reduce((sum, r) => sum + r.response_count, 0);
+  if (total === 0) {
+    return { responseCount: 0, warmupDays: null, engagementMinutes: null, minPosts: null };
+  }
+  const weighted = (pick: (r: CalibrationRow) => number | null) => {
+    let num = 0;
+    let den = 0;
+    for (const r of rows) {
+      const v = pick(r);
+      if (v === null || v === undefined || r.response_count === 0) continue;
+      num += Number(v) * r.response_count;
+      den += r.response_count;
+    }
+    return den === 0 ? null : num / den;
+  };
+  return {
+    responseCount: total,
+    warmupDays: weighted((r) => r.avg_warmup_days),
+    engagementMinutes: weighted((r) => r.avg_engagement_minutes),
+    minPosts: weighted((r) => r.avg_min_posts),
+  };
+}

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useCalibration } from "@/hooks/use-canvas";
 import {
   PAY_FREQUENCIES,
-  matchCollabType,
+  summarizeCalibration,
   toISODate,
   warmupEndDate,
   type Collab,
@@ -59,21 +59,21 @@ export function CollabForm({
   });
 
   const match = useMemo(() => {
-    const type = matchCollabType(values.source);
-    if (!type) return null;
-    const row = calibration.find((c) => c.collab_type === type);
-    return row && row.response_count > 0 ? row : null;
-  }, [values.source, calibration]);
+    const summary = summarizeCalibration(calibration);
+    return summary.responseCount > 0 ? summary : null;
+  }, [calibration]);
 
-  // Pre-fill calibrated defaults until the creator overrides them.
+  // Pre-fill creator-recommended defaults until the creator overrides them.
   useEffect(() => {
     if (!match || touchedWarmup) return;
     setValues((v) => ({
       ...v,
-      warmup_days: Math.min(5, Math.max(2, Math.round(Number(match.avg_warmup_days ?? v.warmup_days)))),
-      daily_engagement_minutes:
-        Math.min(45, Math.max(10, Math.round(Number(match.avg_engagement_minutes ?? v.daily_engagement_minutes) / 5) * 5)),
-      min_daily_posts: Math.max(0, Math.round(Number(match.avg_min_posts ?? v.min_daily_posts))),
+      warmup_days: Math.min(5, Math.max(2, Math.round(match.warmupDays ?? v.warmup_days))),
+      daily_engagement_minutes: Math.min(
+        45,
+        Math.max(10, Math.round((match.engagementMinutes ?? v.daily_engagement_minutes) / 5) * 5),
+      ),
+      min_daily_posts: Math.max(0, Math.round(match.minPosts ?? v.min_daily_posts)),
     }));
   }, [match, touchedWarmup]);
 
@@ -121,8 +121,8 @@ export function CollabForm({
 
   const badge = match ? (
     <span className="inline-block rounded-full bg-accent/12 px-2.5 py-1 text-[11px] font-semibold text-accent">
-      Recommended based on {match.response_count} creator response
-      {match.response_count === 1 ? "" : "s"} via Terac
+      Recommended based on {match.responseCount} creator response
+      {match.responseCount === 1 ? "" : "s"} via Terac
     </span>
   ) : null;
 

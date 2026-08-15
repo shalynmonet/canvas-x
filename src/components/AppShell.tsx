@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const tabs = [
   { to: "/home", label: "Today", icon: CalendarCheck },
   { to: "/collabs/new", label: "Add", icon: Plus },
-  { to: "/calibration", label: "Calibration", icon: ChartBarBig },
+  { to: "/calibration", label: "Recommendations", icon: ChartBarBig },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
