@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-canvas";
 import { syncSubscription } from "@/lib/billing.functions";
-import { MONTHLY_PRICE_USD, trialDaysLeft } from "@/lib/canvas";
+import { trialDaysLeft } from "@/lib/canvas";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
