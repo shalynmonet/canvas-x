@@ -88,7 +88,8 @@ function Landing() {
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Then ${YEARLY_PRICE_USD}/year — or ${LIFETIME_PRICE_USD} once while the offer lasts.
+          Then ${STANDARD_PRICE_USD} once for lifetime access — or just ${LIFETIME_PRICE_USD} while
+          the offer lasts.
         </p>
 
 
