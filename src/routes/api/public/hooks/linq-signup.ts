@@ -276,7 +276,7 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
           { auth: { persistSession: false } },
         );
 
-        const origin = new URL(request.url).origin;
+        const origin = "https://canvas-x.lovable.app";
         const signupUrl = `${origin}/auth`;
         const upgradeUrl = `${origin}/upgrade`;
 

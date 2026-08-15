@@ -102,7 +102,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
         });
 
         const now = new Date();
-        const appUrl = new URL(request.url).origin;
+        const appUrl = "https://canvas-x.lovable.app";
 
         const { data: profiles, error } = await db
           .from("profiles")
