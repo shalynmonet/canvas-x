@@ -235,6 +235,42 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_leads: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          name: string | null
+          notes: string | null
+          payload: Json | null
+          phone: string | null
+          source: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          name?: string | null
+          notes?: string | null
+          payload?: Json | null
+          phone?: string | null
+          source?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          name?: string | null
+          notes?: string | null
+          payload?: Json | null
+          phone?: string | null
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
       view_logs: {
         Row: {
           collab_id: string
