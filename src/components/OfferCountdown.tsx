@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { formatCountdown, lifetimeOfferMsLeft } from "@/lib/canvas";
 
-/** Live countdown to the $1 lifetime offer deadline (3:45pm Chicago). */
+/** Live countdown to the $1 lifetime offer deadline (11:59pm Chicago). */
 export function useOfferCountdown() {
   const [msLeft, setMsLeft] = useState<number | null>(null);
 
