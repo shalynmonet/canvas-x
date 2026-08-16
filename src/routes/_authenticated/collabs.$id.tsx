@@ -184,7 +184,41 @@ function CollabDetail() {
         </section>
       )}
 
-      {tab === "edit" && <CollabForm collab={collab} onSaved={() => setTab("views")} />}
+      {tab === "edit" && (
+        <>
+          <CollabForm
+            collab={collab}
+            onSaved={() => setTab("views")}
+            onCancel={() => setTab("views")}
+          />
+          <section className="card-surface space-y-3 p-5">
+            <h2 className="text-sm font-semibold">Remove this collab</h2>
+            <p className="text-xs text-muted-foreground">
+              Deletes {collab.brand_name} along with its daily history and logged views. This
+              can’t be undone.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full" disabled={deleting}>
+                  {deleting ? "Removing…" : "Remove collab"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {collab.brand_name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Its checklist history and view logs will be deleted permanently.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep it</AlertDialogCancel>
+                  <AlertDialogAction onClick={removeCollab}>Remove</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </section>
+        </>
+      )}
     </div>
   );
 }
