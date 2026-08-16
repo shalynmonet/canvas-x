@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -6,6 +6,18 @@ import { AppShell } from "@/components/AppShell";
 import { AccessGate } from "@/components/AccessGate";
 import { CollabForm } from "@/components/CollabForm";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useCollab, useCollabLogs, useViewLogs } from "@/hooks/use-canvas";
 import {
@@ -49,6 +61,25 @@ function CollabDetail() {
   const { data: logs = [] } = useCollabLogs(id);
   const { data: views = [] } = useViewLogs(id);
   const [tab, setTab] = useState<"views" | "history" | "edit">("views");
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  async function removeCollab() {
+    setDeleting(true);
+    try {
+      await supabase.from("view_logs").delete().eq("collab_id", id);
+      await supabase.from("daily_logs").delete().eq("collab_id", id);
+      const { error } = await supabase.from("collabs").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Collab removed");
+      void queryClient.invalidateQueries();
+      navigate({ to: "/home" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove collab");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (!collab) {
@@ -184,7 +215,41 @@ function CollabDetail() {
         </section>
       )}
 
-      {tab === "edit" && <CollabForm collab={collab} onSaved={() => setTab("views")} />}
+      {tab === "edit" && (
+        <>
+          <CollabForm
+            collab={collab}
+            onSaved={() => setTab("views")}
+            onCancel={() => setTab("views")}
+          />
+          <section className="card-surface space-y-3 p-5">
+            <h2 className="text-sm font-semibold">Remove this collab</h2>
+            <p className="text-xs text-muted-foreground">
+              Deletes {collab.brand_name} along with its daily history and logged views. This
+              can’t be undone.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full" disabled={deleting}>
+                  {deleting ? "Removing…" : "Remove collab"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {collab.brand_name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Its checklist history and view logs will be deleted permanently.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep it</AlertDialogCancel>
+                  <AlertDialogAction onClick={removeCollab}>Remove</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </section>
+        </>
+      )}
     </div>
   );
 }

@@ -33,7 +33,10 @@ function NewCollab() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Add collab</h1>
-      <CollabForm onSaved={(id) => navigate({ to: "/collabs/$id", params: { id } })} />
+      <CollabForm
+        onSaved={(id) => navigate({ to: "/collabs/$id", params: { id } })}
+        onCancel={() => navigate({ to: "/home" })}
+      />
     </div>
   );
 }
