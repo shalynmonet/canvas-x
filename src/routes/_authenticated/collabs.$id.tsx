@@ -61,6 +61,25 @@ function CollabDetail() {
   const { data: logs = [] } = useCollabLogs(id);
   const { data: views = [] } = useViewLogs(id);
   const [tab, setTab] = useState<"views" | "history" | "edit">("views");
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  async function removeCollab() {
+    setDeleting(true);
+    try {
+      await supabase.from("view_logs").delete().eq("collab_id", id);
+      await supabase.from("daily_logs").delete().eq("collab_id", id);
+      const { error } = await supabase.from("collabs").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Collab removed");
+      void queryClient.invalidateQueries();
+      navigate({ to: "/home" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove collab");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (!collab) {
