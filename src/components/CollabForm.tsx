@@ -35,9 +35,11 @@ const ENGAGEMENT_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45];
 export function CollabForm({
   collab,
   onSaved,
+  onCancel,
 }: {
   collab?: Collab;
   onSaved: (id: string) => void;
+  onCancel?: () => void;
 }) {
   const queryClient = useQueryClient();
   const { data: calibration = [] } = useCalibration();
@@ -294,9 +296,23 @@ export function CollabForm({
         Warmup ends {warmupEndDate(values.start_date, values.warmup_days)}
       </p>
 
-      <Button type="submit" size="lg" className="w-full" disabled={busy}>
-        {busy ? "Saving…" : collab ? "Save changes" : "Add collab"}
-      </Button>
+      <div className="space-y-2">
+        <Button type="submit" size="lg" className="w-full" disabled={busy}>
+          {busy ? "Saving…" : collab ? "Save changes" : "Add collab"}
+        </Button>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full"
+            disabled={busy}
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 }
