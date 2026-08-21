@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SurveyRouteImport } from './routes/survey'
 import { Route as UpgradeRouteImport } from './routes/upgrade'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCalibrationRouteImport } from './routes/_authenticated/calibration'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -46,6 +47,11 @@ const UpgradeRoute = UpgradeRouteImport.update({
   id: '/upgrade',
   path: '/upgrade',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalibrationRoute =
   AuthenticatedCalibrationRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/calibration': typeof AuthenticatedCalibrationRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/calibration': typeof AuthenticatedCalibrationRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/survey'
     | '/upgrade'
+    | '/calendar'
     | '/calibration'
     | '/home'
     | '/settings'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/survey'
     | '/upgrade'
+    | '/calendar'
     | '/calibration'
     | '/home'
     | '/settings'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/survey'
     | '/upgrade'
+    | '/_authenticated/calendar'
     | '/_authenticated/calibration'
     | '/_authenticated/home'
     | '/_authenticated/settings'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/upgrade'
       preLoaderRoute: typeof UpgradeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calibration': {
       id: '/_authenticated/calibration'
@@ -288,6 +307,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCalibrationRoute: typeof AuthenticatedCalibrationRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -296,6 +316,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCalibrationRoute: AuthenticatedCalibrationRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
