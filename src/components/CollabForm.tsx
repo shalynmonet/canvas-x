@@ -98,17 +98,6 @@ export function CollabForm({
     }
   }
 
-  const badge = (
-    <span className="block min-h-[26px]">
-      {match ? (
-        <span className="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[11px] font-semibold text-accent">
-          Recommended based on {match.responseCount} creator response
-          {match.responseCount === 1 ? "" : "s"} via Terac
-        </span>
-      ) : null}
-    </span>
-  );
-
   return (
     <form onSubmit={submit} className="space-y-5 pb-6">
       <Field label="Brand name" htmlFor="brand_name">
@@ -172,16 +161,12 @@ export function CollabForm({
             <Chip
               key={d}
               active={values.warmup_days === d}
-              onClick={() => {
-                setTouchedWarmup(true);
-                set("warmup_days", d);
-              }}
+              onClick={() => set("warmup_days", d)}
             >
               {d}d
             </Chip>
           ))}
         </div>
-        {badge}
       </Field>
 
       <Field label="Daily engagement time once warmed up">
@@ -190,16 +175,12 @@ export function CollabForm({
             <Chip
               key={m}
               active={values.daily_engagement_minutes === m}
-              onClick={() => {
-                setTouchedWarmup(true);
-                set("daily_engagement_minutes", m);
-              }}
+              onClick={() => set("daily_engagement_minutes", m)}
             >
               {m}m
             </Chip>
           ))}
         </div>
-        {badge}
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
@@ -234,7 +215,6 @@ export function CollabForm({
           value={values.min_daily_posts}
           onChange={(e) => set("min_daily_posts", Number(e.target.value))}
         />
-        {badge}
       </Field>
 
       <Field label="Pay frequency" htmlFor="pay_frequency">
