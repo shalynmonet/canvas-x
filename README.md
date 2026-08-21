@@ -1,6 +1,6 @@
 # Canvas Creator Hub
 
-Build "CanvasX" — a UGC collab organizer for creators managing multiple 
+Build "CanvOps" — a UGC collab organizer for creators managing multiple 
 
 brand deals, with a subscription paywall, real-creator-calibrated defaults, 
 

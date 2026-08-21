@@ -10,13 +10,13 @@ export const Route = createFileRoute("/billing/return")({
   validateSearch: z.object({ session_id: z.string().optional() }),
   head: () => ({
     meta: [
-      { title: "Confirming your subscription — CanvasX" },
+      { title: "Confirming your subscription — CanvOps" },
       {
         name: "description",
-        content: "CanvasX is confirming your payment with Stripe and unlocking full access.",
+        content: "CanvOps is confirming your payment with Stripe and unlocking full access.",
       },
-      { property: "og:title", content: "Confirming your subscription — CanvasX" },
-      { property: "og:description", content: "Unlocking full CanvasX access automatically." },
+      { property: "og:title", content: "Confirming your subscription — CanvOps" },
+      { property: "og:description", content: "Unlocking full CanvOps access automatically." },
     ],
   }),
   component: BillingReturn,
@@ -40,7 +40,7 @@ function BillingReturn() {
         if (cancelled) return;
         await queryClient.invalidateQueries({ queryKey: ["profile"] });
         if (result.unlocked) {
-          setMessage("Payment confirmed — unlocking CanvasX…");
+          setMessage("Payment confirmed — unlocking CanvOps…");
           navigate({ to: "/home", replace: true });
         } else {
           setMessage("Stripe hasn't confirmed this payment yet. Try again in a moment.");
@@ -58,7 +58,7 @@ function BillingReturn() {
 
   return (
     <div className="mx-auto max-w-sm px-5 py-24 text-center">
-      <h1 className="text-2xl font-bold">CanvasX Pro</h1>
+      <h1 className="text-2xl font-bold">CanvOps Pro</h1>
       <p className="mt-3 text-sm text-muted-foreground">{message}</p>
     </div>
   );

@@ -18,12 +18,12 @@ import { trialDaysLeft } from "@/lib/canvas";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Settings & reminders — CanvasX" },
+      { title: "Settings & reminders — CanvOps" },
       {
         name: "description",
-        content: "Manage your reminder text time, phone number and CanvasX subscription.",
+        content: "Manage your reminder text time, phone number and CanvOps subscription.",
       },
-      { property: "og:title", content: "Settings & reminders — CanvasX" },
+      { property: "og:title", content: "Settings & reminders — CanvOps" },
       {
         property: "og:description",
         content: "Reminder time, phone number and subscription controls.",

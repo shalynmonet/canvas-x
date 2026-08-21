@@ -10,13 +10,13 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in to CanvasX — UGC collab organizer" },
+      { title: "Sign in to CanvOps — UGC collab organizer" },
       {
         name: "description",
         content:
-          "Log in or create your CanvasX account to track brand deals, daily posting checklists and earnings estimates.",
+          "Log in or create your CanvOps account to track brand deals, daily posting checklists and earnings estimates.",
       },
-      { property: "og:title", content: "Sign in to CanvasX" },
+      { property: "og:title", content: "Sign in to CanvOps" },
       {
         property: "og:description",
         content: "Track every UGC brand deal, daily checklist and payout in one place.",
@@ -134,7 +134,7 @@ function AuthPage() {
   return (
     <main className="mx-auto max-w-sm px-4 py-8">
       <Link to="/" className="font-display text-lg font-bold">
-        CanvasX
+        CanvOps
       </Link>
       <h1 className="mt-6 text-3xl font-bold">
         {mode === "signup"

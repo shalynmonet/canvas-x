@@ -6,13 +6,13 @@ import { CollabForm } from "@/components/CollabForm";
 export const Route = createFileRoute("/_authenticated/collabs/new")({
   head: () => ({
     meta: [
-      { title: "Add a collab — CanvasX" },
+      { title: "Add a collab — CanvOps" },
       {
         name: "description",
         content:
           "Add a brand collab with calibrated warmup, engagement and posting defaults from real creators.",
       },
-      { property: "og:title", content: "Add a collab — CanvasX" },
+      { property: "og:title", content: "Add a collab — CanvOps" },
       {
         property: "og:description",
         content: "Set up a new brand deal with creator-calibrated defaults.",
