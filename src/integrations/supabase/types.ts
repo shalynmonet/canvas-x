@@ -27,6 +27,7 @@ export type Database = {
           min_views_for_payout: number
           pay_frequency: string
           platforms: string
+          same_cpm_for_all_platforms: boolean
           social_accounts: string
           source: string
           start_date: string
@@ -47,6 +48,7 @@ export type Database = {
           min_views_for_payout?: number
           pay_frequency?: string
           platforms?: string
+          same_cpm_for_all_platforms?: boolean
           social_accounts?: string
           source?: string
           start_date?: string
@@ -67,6 +69,7 @@ export type Database = {
           min_views_for_payout?: number
           pay_frequency?: string
           platforms?: string
+          same_cpm_for_all_platforms?: boolean
           social_accounts?: string
           source?: string
           start_date?: string
@@ -111,6 +114,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "daily_logs_collab_id_fkey"
+            columns: ["collab_id"]
+            isOneToOne: false
+            referencedRelation: "collabs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_rates: {
+        Row: {
+          collab_id: string
+          cpm_rate: number
+          created_at: string
+          id: string
+          platform: string
+        }
+        Insert: {
+          collab_id: string
+          cpm_rate?: number
+          created_at?: string
+          id?: string
+          platform: string
+        }
+        Update: {
+          collab_id?: string
+          cpm_rate?: number
+          created_at?: string
+          id?: string
+          platform?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_rates_collab_id_fkey"
             columns: ["collab_id"]
             isOneToOne: false
             referencedRelation: "collabs"
@@ -228,6 +263,7 @@ export type Database = {
           collab_id: string
           id: string
           logged_at: string
+          platform_views: Json
           post_date: string
           post_index: number
           target_date: string | null
@@ -238,6 +274,7 @@ export type Database = {
           collab_id: string
           id?: string
           logged_at?: string
+          platform_views?: Json
           post_date: string
           post_index?: number
           target_date?: string | null
@@ -248,6 +285,7 @@ export type Database = {
           collab_id?: string
           id?: string
           logged_at?: string
+          platform_views?: Json
           post_date?: string
           post_index?: number
           target_date?: string | null
