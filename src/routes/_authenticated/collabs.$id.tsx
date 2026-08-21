@@ -19,11 +19,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useCollab, useCollabLogs, useViewEntries } from "@/hooks/use-canvas";
+import { useCollab, useCollabLogs, usePlatformRates, useViewEntries } from "@/hooks/use-canvas";
 import {
+  collabPlatforms,
+  cpmForPlatform,
+  entryEstimatedEarnings,
+  entryHasViews,
+  entryTotalViews,
   estimatedEarnings,
   isInWarmup,
   money,
+  platformLabel,
   postEstimatedEarnings,
   warmupEndDate,
   type ViewEntry,
@@ -68,6 +74,7 @@ function CollabDetail() {
   const { data: collab, isLoading } = useCollab(id);
   const { data: logs = [] } = useCollabLogs(id);
   const { data: entries = [] } = useViewEntries(id);
+  const { data: rates = [] } = usePlatformRates(id);
   const [tab, setTab] = useState<"views" | "history" | "edit">("views");
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
@@ -101,8 +108,10 @@ function CollabDetail() {
     );
   }
 
-  const earnings = estimatedEarnings(collab, entries);
-  const loggedCount = entries.filter((e) => e.views !== null).length;
+  const earnings = estimatedEarnings(collab, entries, rates);
+  const loggedCount = entries.filter(entryHasViews).length;
+  const platforms = collabPlatforms(collab);
+  const minViews = Number(collab.min_views_for_payout);
 
   async function saveViews(entry: ViewEntry, raw: string) {
     const trimmed = raw.trim();
@@ -115,6 +124,27 @@ function CollabDetail() {
     const { error } = await supabase
       .from("view_entries")
       .update({ views: next })
+      .eq("id", entry.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    void queryClient.invalidateQueries({ queryKey: ["view_entries", id] });
+  }
+
+  async function savePlatformViews(entry: ViewEntry, platform: string, raw: string) {
+    const trimmed = raw.trim();
+    const next = trimmed === "" ? null : Math.max(0, Math.round(Number(trimmed)));
+    if (trimmed !== "" && !Number.isFinite(next)) {
+      toast.error("Enter a valid view count");
+      return;
+    }
+    const current = entry.platform_views ?? {};
+    if ((current[platform] ?? null) === next) return;
+    const platform_views = { ...current, [platform]: next };
+    const { error } = await supabase
+      .from("view_entries")
+      .update({ platform_views })
       .eq("id", entry.id);
     if (error) {
       toast.error(error.message);
@@ -140,6 +170,14 @@ function CollabDetail() {
             ? "any views"
             : `${Number(collab.min_views_for_payout).toLocaleString()} views`}
         </p>
+        {!collab.same_cpm_for_all_platforms && rates.length > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Per-platform CPM:{" "}
+            {rates
+              .map((r) => `${platformLabel(r.platform)} ${money(Number(r.cpm_rate))}`)
+              .join(" · ")}
+          </p>
+        )}
       </div>
 
       <section className="card-surface bg-primary p-5 text-primary-foreground">
@@ -149,7 +187,7 @@ function CollabDetail() {
         <p className="mt-1 font-display text-4xl font-bold">{money(earnings)}</p>
         <p className="mt-2 text-xs opacity-70">
           Live estimate — {money(Number(collab.base_pay))} base + CPM on{" "}
-          {entries.reduce((s, e) => s + (e.views ?? 0), 0).toLocaleString()} views logged across{" "}
+          {entries.reduce((s, e) => s + entryTotalViews(e), 0).toLocaleString()} views logged across{" "}
           {loggedCount} of {entries.length} post{entries.length === 1 ? "" : "s"}.
           {Number(collab.min_views_for_payout) > 0 &&
             ` Posts under ${Number(collab.min_views_for_payout).toLocaleString()} views don’t qualify for CPM.`}{" "}
@@ -181,58 +219,112 @@ function CollabDetail() {
               here with its own views target date.
             </p>
           )}
-          {entries.map((entry) => (
-            <div key={entry.id} className="card-surface space-y-3 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">
-                    Posted {formatDate(entry.post_date)}
-                    {entry.post_index > 1 ? ` (post ${entry.post_index})` : ""}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Views entry opens {formatDate(entry.target_date)} · {entry.view_window_days}
-                    -day window
-                  </p>
-                </div>
-                {entry.views !== null &&
-                  (entry.views < Number(collab.min_views_for_payout) ? (
-                    <span className="rounded-lg bg-secondary px-2 py-1 text-xs font-semibold text-muted-foreground">
-                      Below payout min (
-                      {Number(collab.min_views_for_payout).toLocaleString()})
-                    </span>
-                  ) : (
+          {entries.map((entry) => {
+            const perPlatform = entry.platform_views ?? {};
+            const hasAny = entryHasViews(entry);
+            const postTotal = entryEstimatedEarnings(entry, collab, rates);
+            const hasPlatformValues = Object.values(perPlatform).some(
+              (v) => v !== null && v !== undefined,
+            );
+            return (
+              <div key={entry.id} className="card-surface space-y-3 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Posted {formatDate(entry.post_date)}
+                      {entry.post_index > 1 ? ` (post ${entry.post_index})` : ""}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Views entry opens {formatDate(entry.target_date)} ·{" "}
+                      {entry.view_window_days}-day window
+                    </p>
+                  </div>
+                  {hasAny && (
                     <span className="rounded-lg bg-success/10 px-2 py-1 text-xs font-semibold text-success">
-                      Est.{" "}
-                      {money(
-                        postEstimatedEarnings(
-                          entry.views,
-                          Number(collab.cpm_rate),
-                          Number(collab.min_views_for_payout),
-                        ),
-                      )}
+                      Est. {money(postTotal)}
                     </span>
-                  ))}
+                  )}
+                </div>
+
+                {platforms.length === 0 ? (
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor={`views-entry-${entry.id}`}
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Views
+                    </label>
+                    <Input
+                      id={`views-entry-${entry.id}`}
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      aria-label={`Total views for post from ${entry.post_date}`}
+                      defaultValue={entry.views ?? ""}
+                      placeholder={`total views by ${formatDate(entry.target_date)}`}
+                      onBlur={(e) => saveViews(entry, e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {platforms.map((platform) => {
+                        const views = perPlatform[platform] ?? null;
+                        const rate = cpmForPlatform(collab, rates, platform);
+                        return (
+                          <div key={platform} className="flex items-center gap-3">
+                            <div className="w-24 shrink-0">
+                              <label
+                                htmlFor={`views-${entry.id}-${platform}`}
+                                className="text-xs font-semibold"
+                              >
+                                {platformLabel(platform)}
+                              </label>
+                              <p className="text-[10px] text-muted-foreground">
+                                {money(rate)} CPM
+                              </p>
+                            </div>
+                            <Input
+                              id={`views-${entry.id}-${platform}`}
+                              type="number"
+                              min={0}
+                              inputMode="numeric"
+                              aria-label={`${platformLabel(platform)} views for post from ${entry.post_date}`}
+                              defaultValue={views ?? ""}
+                              placeholder={`views by ${formatDate(entry.target_date)}`}
+                              onBlur={(e) => savePlatformViews(entry, platform, e.target.value)}
+                            />
+                            <div className="w-24 shrink-0 text-right text-xs">
+                              {views !== null &&
+                                (views < minViews ? (
+                                  <span className="text-muted-foreground">
+                                    below {minViews.toLocaleString()} min
+                                  </span>
+                                ) : (
+                                  <span className="font-semibold text-success">
+                                    {money(postEstimatedEarnings(views, rate, minViews))}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {entry.views !== null && !hasPlatformValues && (
+                      <p className="text-xs text-muted-foreground">
+                        Previously logged total: {entry.views.toLocaleString()} views
+                      </p>
+                    )}
+                    {hasAny && (
+                      <p className="border-t border-border pt-2 text-xs font-semibold">
+                        Post total estimate: {money(postTotal)}
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
-              <div className="flex items-center gap-3">
-                <label
-                  htmlFor={`views-entry-${entry.id}`}
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Views
-                </label>
-                <Input
-                  id={`views-entry-${entry.id}`}
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
-                  aria-label={`Total views for post from ${entry.post_date}`}
-                  defaultValue={entry.views ?? ""}
-                  placeholder={`total views by ${formatDate(entry.target_date)}`}
-                  onBlur={(e) => saveViews(entry, e.target.value)}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
 
@@ -266,6 +358,7 @@ function CollabDetail() {
         <>
           <CollabForm
             collab={collab}
+            rates={rates}
             onSaved={() => setTab("views")}
             onCancel={() => setTab("views")}
           />
