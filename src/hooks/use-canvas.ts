@@ -122,3 +122,17 @@ export function usePlatformRates(collabId?: string) {
     },
   });
 }
+
+export function useTodoItems() {
+  return useQuery({
+    queryKey: ["todo_items"],
+    queryFn: async (): Promise<TodoItem[]> => {
+      const { data, error } = await supabase
+        .from("todo_items")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as TodoItem[];
+    },
+  });
+}

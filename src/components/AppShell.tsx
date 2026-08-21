@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarCheck, CalendarDays, Plus, Settings } from "lucide-react";
+import { CalendarCheck, CalendarDays, ListTodo, Plus, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
@@ -9,6 +9,7 @@ const tabs = [
   { to: "/home", label: "Today", icon: CalendarCheck },
   { to: "/collabs/new", label: "Add", icon: Plus },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/todo", label: "To Do", icon: ListTodo },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
