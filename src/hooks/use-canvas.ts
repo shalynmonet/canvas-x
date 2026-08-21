@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { CalibrationRow, Collab, DailyLog, Profile, ViewLog } from "@/lib/canvas";
+import type { Collab, DailyLog, Profile, ViewLog } from "@/lib/canvas";
 
 export function useProfile() {
   return useQuery({
@@ -61,6 +61,22 @@ export function useDailyLogs(date?: string) {
   });
 }
 
+export function useDailyLogsRange(from: string, to: string) {
+  return useQuery({
+    queryKey: ["daily_logs", "range", from, to],
+    queryFn: async (): Promise<DailyLog[]> => {
+      const { data, error } = await supabase
+        .from("daily_logs")
+        .select("*")
+        .gte("log_date", from)
+        .lte("log_date", to)
+        .order("log_date", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as DailyLog[];
+    },
+  });
+}
+
 export function useCollabLogs(collabId: string) {
   return useQuery({
     queryKey: ["collab_logs", collabId],
@@ -87,20 +103,6 @@ export function useViewLogs(collabId: string) {
         .order("day_number");
       if (error) throw error;
       return (data ?? []) as unknown as ViewLog[];
-    },
-  });
-}
-
-export function useCalibration() {
-  return useQuery({
-    queryKey: ["calibration"],
-    queryFn: async (): Promise<CalibrationRow[]> => {
-      const { data, error } = await supabase
-        .from("calibration_results")
-        .select("*")
-        .order("collab_type");
-      if (error) throw error;
-      return (data ?? []) as unknown as CalibrationRow[];
     },
   });
 }
