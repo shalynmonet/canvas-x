@@ -27,6 +27,7 @@ const schema = z.object({
   cpm_rate: z.number().min(0).max(10_000),
   min_daily_posts: z.number().int().min(0).max(20),
   pay_frequency: z.enum(["weekly", "biweekly", "monthly", "on completion"]),
+  view_payout_days: z.number().int().min(15).max(45),
   status: z.enum(["active", "completed", "paused"]),
 });
 

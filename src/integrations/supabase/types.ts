@@ -31,6 +31,7 @@ export type Database = {
           start_date: string
           status: string
           user_id: string
+          view_payout_days: number
           warmup_days: number
         }
         Insert: {
@@ -49,6 +50,7 @@ export type Database = {
           start_date?: string
           status?: string
           user_id: string
+          view_payout_days?: number
           warmup_days?: number
         }
         Update: {
@@ -67,6 +69,7 @@ export type Database = {
           start_date?: string
           status?: string
           user_id?: string
+          view_payout_days?: number
           warmup_days?: number
         }
         Relationships: []
