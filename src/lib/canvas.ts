@@ -30,6 +30,7 @@ export interface Collab {
   pay_frequency: string;
   view_window_days: number;
   min_views_for_payout: number;
+  same_cpm_for_all_platforms: boolean;
   status: string;
   created_at: string;
 }
@@ -52,7 +53,46 @@ export interface ViewEntry {
   view_window_days: number;
   target_date: string;
   views: number | null;
+  platform_views: Record<string, number | null>;
   logged_at: string;
+}
+
+export interface PlatformRate {
+  id: string;
+  collab_id: string;
+  platform: string;
+  cpm_rate: number;
+}
+
+export const PLATFORM_OPTIONS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "youtube", label: "YouTube" },
+  { value: "facebook", label: "Facebook" },
+] as const;
+
+export function platformLabel(value: string): string {
+  return PLATFORM_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}
+
+/** Platforms selected on the collab (stored comma-separated). */
+export function collabPlatforms(collab: Collab): string[] {
+  if (!collab.platforms) return [];
+  return collab.platforms
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** CPM that applies to a platform: the collab-wide rate, or the platform's own rate. */
+export function cpmForPlatform(
+  collab: Collab,
+  rates: PlatformRate[],
+  platform: string,
+): number {
+  if (collab.same_cpm_for_all_platforms !== false) return Number(collab.cpm_rate);
+  const row = rates.find((r) => r.platform === platform);
+  return Number(row?.cpm_rate ?? 0);
 }
 
 export const PAY_FREQUENCIES: PayFrequency[] = [
@@ -138,13 +178,53 @@ export function postEstimatedEarnings(
   return (views / 1000) * cpmRate;
 }
 
-/** Collab-level estimate: base pay + per-post CPM for qualifying entries logged so far. */
-export function estimatedEarnings(collab: Collab, entries: ViewEntry[]): number {
-  const cpm = Number(collab.cpm_rate);
+/** Estimated earnings for one logged post, summed across every platform with views entered. */
+export function entryEstimatedEarnings(
+  entry: ViewEntry,
+  collab: Collab,
+  rates: PlatformRate[] = [],
+): number {
   const min = Number(collab.min_views_for_payout ?? 0);
+  const perPlatform = entry.platform_views ?? {};
+  let sum = 0;
+  let anyPlatformViews = false;
+  for (const [platform, views] of Object.entries(perPlatform)) {
+    if (views === null || views === undefined) continue;
+    anyPlatformViews = true;
+    sum += postEstimatedEarnings(views, cpmForPlatform(collab, rates, platform), min);
+  }
+  // Legacy single-total entries logged before per-platform tracking
+  if (!anyPlatformViews && entry.views !== null) {
+    sum += postEstimatedEarnings(entry.views, Number(collab.cpm_rate), min);
+  }
+  return sum;
+}
+
+/** Total views logged on an entry across all platforms (legacy total as fallback). */
+export function entryTotalViews(entry: ViewEntry): number {
+  const perPlatform = entry.platform_views ?? {};
+  const sum = Object.values(perPlatform).reduce<number>((s, v) => s + (v ?? 0), 0);
+  if (sum > 0) return sum;
+  return entry.views ?? 0;
+}
+
+/** Whether any view count (per-platform or legacy) has been entered for this post. */
+export function entryHasViews(entry: ViewEntry): boolean {
+  const perPlatform = entry.platform_views ?? {};
+  return (
+    entry.views !== null ||
+    Object.values(perPlatform).some((v) => v !== null && v !== undefined)
+  );
+}
+
+/** Collab-level estimate: base pay + per-post, per-platform CPM logged so far. */
+export function estimatedEarnings(
+  collab: Collab,
+  entries: ViewEntry[],
+  rates: PlatformRate[] = [],
+): number {
   const viewsPay = entries.reduce(
-    (sum, e) =>
-      sum + (e.views !== null ? postEstimatedEarnings(e.views, cpm, min) : 0),
+    (sum, e) => sum + entryEstimatedEarnings(e, collab, rates),
     0,
   );
   return Number(collab.base_pay) + viewsPay;

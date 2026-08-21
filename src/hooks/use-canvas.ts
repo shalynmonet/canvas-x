@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Collab, DailyLog, Profile, ViewEntry } from "@/lib/canvas";
+import type { Collab, DailyLog, PlatformRate, Profile, ViewEntry } from "@/lib/canvas";
 
 export function useProfile() {
   return useQuery({
@@ -104,6 +104,21 @@ export function useViewEntries(collabId: string) {
         .order("post_index");
       if (error) throw error;
       return (data ?? []) as unknown as ViewEntry[];
+    },
+  });
+}
+
+export function usePlatformRates(collabId?: string) {
+  return useQuery({
+    queryKey: ["platform_rates", collabId ?? "none"],
+    enabled: !!collabId,
+    queryFn: async (): Promise<PlatformRate[]> => {
+      const { data, error } = await supabase
+        .from("platform_rates")
+        .select("*")
+        .eq("collab_id", collabId!);
+      if (error) throw error;
+      return (data ?? []) as unknown as PlatformRate[];
     },
   });
 }
