@@ -48,21 +48,6 @@ export interface ViewLog {
   view_count: number;
 }
 
-export interface CalibrationRow {
-  collab_type: string;
-  avg_warmup_days: number | null;
-  avg_engagement_minutes: number | null;
-  avg_min_posts: number | null;
-  response_count: number;
-}
-
-export const COLLAB_TYPES = [
-  "new fashion brand",
-  "established beauty brand",
-  "app/software brand",
-  "agency",
-] as const;
-
 export const PAY_FREQUENCIES: PayFrequency[] = [
   "weekly",
   "biweekly",
@@ -174,48 +159,3 @@ export function money(n: number): string {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
-/** Maps a free-text collab source onto a calibrated collab_type bucket. */
-export function matchCollabType(source: string): string | null {
-  const s = source.toLowerCase();
-  if (!s.trim()) return null;
-  if (/(fashion|apparel|clothing|streetwear)/.test(s)) return "new fashion brand";
-  if (/(beauty|skincare|cosmetic|makeup)/.test(s)) return "established beauty brand";
-  if (/(app|software|saas|tech|game)/.test(s)) return "app/software brand";
-  if (/(agency|manager|management)/.test(s)) return "agency";
-  return null;
-}
-
-/** Single bucket used now that the survey no longer classifies brand type. */
-export const GENERAL_COLLAB_TYPE = "all collabs";
-
-export interface CalibrationSummary {
-  responseCount: number;
-  warmupDays: number | null;
-  engagementMinutes: number | null;
-  minPosts: number | null;
-}
-
-/** Response-weighted average across every calibration bucket. */
-export function summarizeCalibration(rows: CalibrationRow[]): CalibrationSummary {
-  const total = rows.reduce((sum, r) => sum + r.response_count, 0);
-  if (total === 0) {
-    return { responseCount: 0, warmupDays: null, engagementMinutes: null, minPosts: null };
-  }
-  const weighted = (pick: (r: CalibrationRow) => number | null) => {
-    let num = 0;
-    let den = 0;
-    for (const r of rows) {
-      const v = pick(r);
-      if (v === null || v === undefined || r.response_count === 0) continue;
-      num += Number(v) * r.response_count;
-      den += r.response_count;
-    }
-    return den === 0 ? null : num / den;
-  };
-  return {
-    responseCount: total,
-    warmupDays: weighted((r) => r.avg_warmup_days),
-    engagementMinutes: weighted((r) => r.avg_engagement_minutes),
-    minPosts: weighted((r) => r.avg_min_posts),
-  };
-}
