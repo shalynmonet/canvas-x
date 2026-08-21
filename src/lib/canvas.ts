@@ -29,6 +29,7 @@ export interface Collab {
   min_daily_posts: number;
   pay_frequency: string;
   view_window_days: number;
+  min_views_for_payout: number;
   status: string;
   created_at: string;
 }
@@ -124,15 +125,29 @@ export function dayNumber(startDate: string, date: string): number {
   return Math.floor(diff) + 1;
 }
 
-/** Estimated earnings for a single post once its views are entered. */
-export function postEstimatedEarnings(views: number, cpmRate: number): number {
+/**
+ * Estimated earnings for a single post once its views are entered.
+ * A post only qualifies for CPM pay once it reaches minViews.
+ */
+export function postEstimatedEarnings(
+  views: number,
+  cpmRate: number,
+  minViews: number = 0,
+): number {
+  if (views < minViews) return 0;
   return (views / 1000) * cpmRate;
 }
 
-/** Collab-level estimate: base pay + per-post CPM for every entry with views logged so far. */
+/** Collab-level estimate: base pay + per-post CPM for qualifying entries logged so far. */
 export function estimatedEarnings(collab: Collab, entries: ViewEntry[]): number {
-  const totalViews = entries.reduce((sum, e) => sum + (e.views ?? 0), 0);
-  return Number(collab.base_pay) + postEstimatedEarnings(totalViews, Number(collab.cpm_rate));
+  const cpm = Number(collab.cpm_rate);
+  const min = Number(collab.min_views_for_payout ?? 0);
+  const viewsPay = entries.reduce(
+    (sum, e) =>
+      sum + (e.views !== null ? postEstimatedEarnings(e.views, cpm, min) : 0),
+    0,
+  );
+  return Number(collab.base_pay) + viewsPay;
 }
 
 export type CollabDayState = "complete" | "partial" | "empty";

@@ -1,0 +1,1 @@
+ALTER TABLE public.collabs ADD COLUMN min_views_for_payout integer NOT NULL DEFAULT 1000;
