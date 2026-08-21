@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Collab, DailyLog, PlatformRate, Profile, ViewEntry } from "@/lib/canvas";
+import type { Collab, DailyLog, PlatformRate, Profile, TodoItem, ViewEntry } from "@/lib/canvas";
 
 export function useProfile() {
   return useQuery({
