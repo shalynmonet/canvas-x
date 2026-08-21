@@ -28,6 +28,7 @@ const schema = z.object({
   min_daily_posts: z.number().int().min(0).max(20),
   pay_frequency: z.enum(["weekly", "biweekly", "monthly", "on completion"]),
   view_window_days: z.number().int().min(15).max(45),
+  min_views_for_payout: z.number().int().min(0).max(10_000_000),
   status: z.enum(["active", "completed", "paused"]),
 });
 
@@ -66,6 +67,7 @@ export function CollabForm({
     min_daily_posts: collab?.min_daily_posts ?? 1,
     pay_frequency: (collab?.pay_frequency ?? "monthly") as (typeof PAY_FREQUENCIES)[number],
     view_window_days: collab?.view_window_days ?? 15,
+    min_views_for_payout: collab?.min_views_for_payout ?? 1000,
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
 
@@ -283,6 +285,23 @@ export function CollabForm({
               onClick={() => set("view_window_days", d)}
             >
               {d} days
+            </Chip>
+          ))}
+        </div>
+      </Field>
+
+      <Field
+        label="How many views are required for payout?"
+        hint="A post must reach this many views before it earns CPM pay"
+      >
+        <div className="flex gap-2">
+          {[0, 1000, 2000].map((v) => (
+            <Chip
+              key={v}
+              active={values.min_views_for_payout === v}
+              onClick={() => set("min_views_for_payout", v)}
+            >
+              {v === 0 ? "No minimum" : v.toLocaleString()}
             </Chip>
           ))}
         </div>

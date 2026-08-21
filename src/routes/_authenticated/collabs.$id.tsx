@@ -135,7 +135,10 @@ function CollabDetail() {
         <p className="mt-1 text-xs text-muted-foreground">
           {collab.daily_engagement_minutes} min daily engagement · {collab.min_daily_posts} post
           {collab.min_daily_posts === 1 ? "" : "s"} per day · views paid for{" "}
-          {collab.view_window_days} days per post
+          {collab.view_window_days} days per post · payout from{" "}
+          {Number(collab.min_views_for_payout) === 0
+            ? "any views"
+            : `${Number(collab.min_views_for_payout).toLocaleString()} views`}
         </p>
       </div>
 
@@ -147,8 +150,10 @@ function CollabDetail() {
         <p className="mt-2 text-xs opacity-70">
           Live estimate — {money(Number(collab.base_pay))} base + CPM on{" "}
           {entries.reduce((s, e) => s + (e.views ?? 0), 0).toLocaleString()} views logged across{" "}
-          {loggedCount} of {entries.length} post{entries.length === 1 ? "" : "s"}. Updates as
-          more view counts are entered; final payout comes from the brand.
+          {loggedCount} of {entries.length} post{entries.length === 1 ? "" : "s"}.
+          {Number(collab.min_views_for_payout) > 0 &&
+            ` Posts under ${Number(collab.min_views_for_payout).toLocaleString()} views don’t qualify for CPM.`}{" "}
+          Updates as more view counts are entered; final payout comes from the brand.
         </p>
       </section>
 
@@ -189,11 +194,24 @@ function CollabDetail() {
                     -day window
                   </p>
                 </div>
-                {entry.views !== null && (
-                  <span className="rounded-lg bg-success/10 px-2 py-1 text-xs font-semibold text-success">
-                    Est. {money(postEstimatedEarnings(entry.views, Number(collab.cpm_rate)))}
-                  </span>
-                )}
+                {entry.views !== null &&
+                  (entry.views < Number(collab.min_views_for_payout) ? (
+                    <span className="rounded-lg bg-secondary px-2 py-1 text-xs font-semibold text-muted-foreground">
+                      Below payout min (
+                      {Number(collab.min_views_for_payout).toLocaleString()})
+                    </span>
+                  ) : (
+                    <span className="rounded-lg bg-success/10 px-2 py-1 text-xs font-semibold text-success">
+                      Est.{" "}
+                      {money(
+                        postEstimatedEarnings(
+                          entry.views,
+                          Number(collab.cpm_rate),
+                          Number(collab.min_views_for_payout),
+                        ),
+                      )}
+                    </span>
+                  ))}
               </div>
               <div className="flex items-center gap-3">
                 <label
