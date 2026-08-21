@@ -17,6 +17,7 @@ import {
 const schema = z.object({
   brand_name: z.string().trim().min(1, "Brand name is required").max(80),
   social_accounts: z.string().trim().max(200),
+  platforms: z.string().max(200),
   start_date: z.string().min(10, "Pick a start date"),
   source: z.string().trim().max(80),
   main_poc: z.string().trim().max(80),
