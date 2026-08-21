@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,10 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCalibration } from "@/hooks/use-canvas";
 import {
   PAY_FREQUENCIES,
-  summarizeCalibration,
   toISODate,
   warmupEndDate,
   type Collab,
@@ -42,9 +40,7 @@ export function CollabForm({
   onCancel?: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { data: calibration = [] } = useCalibration();
   const [busy, setBusy] = useState(false);
-  const [touchedWarmup, setTouchedWarmup] = useState(Boolean(collab));
   const [values, setValues] = useState({
     brand_name: collab?.brand_name ?? "",
     social_accounts: collab?.social_accounts ?? "",
@@ -59,25 +55,6 @@ export function CollabForm({
     pay_frequency: (collab?.pay_frequency ?? "monthly") as (typeof PAY_FREQUENCIES)[number],
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
-
-  const match = useMemo(() => {
-    const summary = summarizeCalibration(calibration);
-    return summary.responseCount > 0 ? summary : null;
-  }, [calibration]);
-
-  // Pre-fill creator-recommended defaults until the creator overrides them.
-  useEffect(() => {
-    if (!match || touchedWarmup) return;
-    setValues((v) => ({
-      ...v,
-      warmup_days: Math.min(5, Math.max(2, Math.round(match.warmupDays ?? v.warmup_days))),
-      daily_engagement_minutes: Math.min(
-        45,
-        Math.max(10, Math.round((match.engagementMinutes ?? v.daily_engagement_minutes) / 5) * 5),
-      ),
-      min_daily_posts: Math.max(0, Math.round(match.minPosts ?? v.min_daily_posts)),
-    }));
-  }, [match, touchedWarmup]);
 
   function set<K extends keyof typeof values>(key: K, value: (typeof values)[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -120,17 +97,6 @@ export function CollabForm({
       setBusy(false);
     }
   }
-
-  const badge = (
-    <span className="block min-h-[26px]">
-      {match ? (
-        <span className="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[11px] font-semibold text-accent">
-          Recommended based on {match.responseCount} creator response
-          {match.responseCount === 1 ? "" : "s"} via Terac
-        </span>
-      ) : null}
-    </span>
-  );
 
   return (
     <form onSubmit={submit} className="space-y-5 pb-6">
@@ -195,16 +161,12 @@ export function CollabForm({
             <Chip
               key={d}
               active={values.warmup_days === d}
-              onClick={() => {
-                setTouchedWarmup(true);
-                set("warmup_days", d);
-              }}
+              onClick={() => set("warmup_days", d)}
             >
               {d}d
             </Chip>
           ))}
         </div>
-        {badge}
       </Field>
 
       <Field label="Daily engagement time once warmed up">
@@ -213,16 +175,12 @@ export function CollabForm({
             <Chip
               key={m}
               active={values.daily_engagement_minutes === m}
-              onClick={() => {
-                setTouchedWarmup(true);
-                set("daily_engagement_minutes", m);
-              }}
+              onClick={() => set("daily_engagement_minutes", m)}
             >
               {m}m
             </Chip>
           ))}
         </div>
-        {badge}
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
@@ -257,7 +215,6 @@ export function CollabForm({
           value={values.min_daily_posts}
           onChange={(e) => set("min_daily_posts", Number(e.target.value))}
         />
-        {badge}
       </Field>
 
       <Field label="Pay frequency" htmlFor="pay_frequency">

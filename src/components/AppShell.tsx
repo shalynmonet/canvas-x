@@ -1,13 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarCheck, ChartBarBig, Plus, Settings } from "lucide-react";
+import { CalendarCheck, CalendarDays, Plus, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const tabs = [
   { to: "/home", label: "Today", icon: CalendarCheck },
   { to: "/collabs/new", label: "Add", icon: Plus },
-  { to: "/calibration", label: "Recommendations", icon: ChartBarBig },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

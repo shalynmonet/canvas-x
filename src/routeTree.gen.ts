@@ -12,9 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as SurveyRouteImport } from './routes/survey'
 import { Route as UpgradeRouteImport } from './routes/upgrade'
-import { Route as AuthenticatedCalibrationRouteImport } from './routes/_authenticated/calibration'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as BillingReturnRouteImport } from './routes/billing.return'
@@ -37,22 +36,16 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SurveyRoute = SurveyRouteImport.update({
-  id: '/survey',
-  path: '/survey',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UpgradeRoute = UpgradeRouteImport.update({
   id: '/upgrade',
   path: '/upgrade',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCalibrationRoute =
-  AuthenticatedCalibrationRouteImport.update({
-    id: '/calibration',
-    path: '/calibration',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -93,9 +86,8 @@ const ApiPublicHooksRemindersRoute = ApiPublicHooksRemindersRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
-  '/calibration': typeof AuthenticatedCalibrationRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/billing/return': typeof BillingReturnRoute
@@ -107,9 +99,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
-  '/calibration': typeof AuthenticatedCalibrationRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/billing/return': typeof BillingReturnRoute
@@ -123,9 +114,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/survey': typeof SurveyRoute
   '/upgrade': typeof UpgradeRoute
-  '/_authenticated/calibration': typeof AuthenticatedCalibrationRoute
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/billing/return': typeof BillingReturnRoute
@@ -139,9 +129,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/survey'
     | '/upgrade'
-    | '/calibration'
+    | '/calendar'
     | '/home'
     | '/settings'
     | '/billing/return'
@@ -153,9 +142,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/survey'
     | '/upgrade'
-    | '/calibration'
+    | '/calendar'
     | '/home'
     | '/settings'
     | '/billing/return'
@@ -168,9 +156,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/survey'
     | '/upgrade'
-    | '/_authenticated/calibration'
+    | '/_authenticated/calendar'
     | '/_authenticated/home'
     | '/_authenticated/settings'
     | '/billing/return'
@@ -184,7 +171,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  SurveyRoute: typeof SurveyRoute
   UpgradeRoute: typeof UpgradeRoute
   BillingReturnRoute: typeof BillingReturnRoute
   ApiPublicHooksLinqSignupRoute: typeof ApiPublicHooksLinqSignupRoute
@@ -214,13 +200,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/survey': {
-      id: '/survey'
-      path: '/survey'
-      fullPath: '/survey'
-      preLoaderRoute: typeof SurveyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/upgrade': {
       id: '/upgrade'
       path: '/upgrade'
@@ -228,11 +207,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpgradeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/calibration': {
-      id: '/_authenticated/calibration'
-      path: '/calibration'
-      fullPath: '/calibration'
-      preLoaderRoute: typeof AuthenticatedCalibrationRouteImport
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/home': {
@@ -288,7 +267,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCalibrationRoute: typeof AuthenticatedCalibrationRoute
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedCollabsIdRoute: typeof AuthenticatedCollabsIdRoute
@@ -296,7 +275,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCalibrationRoute: AuthenticatedCalibrationRoute,
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedCollabsIdRoute: AuthenticatedCollabsIdRoute,
@@ -310,7 +289,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  SurveyRoute: SurveyRoute,
   UpgradeRoute: UpgradeRoute,
   BillingReturnRoute: BillingReturnRoute,
   ApiPublicHooksLinqSignupRoute: ApiPublicHooksLinqSignupRoute,

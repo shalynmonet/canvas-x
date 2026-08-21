@@ -14,63 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      calibration_responses: {
-        Row: {
-          collab_type: string
-          created_at: string
-          engagement_minutes: number
-          id: string
-          min_posts: number
-          respondent_source: string
-          warmup_days: number
-        }
-        Insert: {
-          collab_type: string
-          created_at?: string
-          engagement_minutes: number
-          id?: string
-          min_posts: number
-          respondent_source?: string
-          warmup_days: number
-        }
-        Update: {
-          collab_type?: string
-          created_at?: string
-          engagement_minutes?: number
-          id?: string
-          min_posts?: number
-          respondent_source?: string
-          warmup_days?: number
-        }
-        Relationships: []
-      }
-      calibration_results: {
-        Row: {
-          avg_engagement_minutes: number | null
-          avg_min_posts: number | null
-          avg_warmup_days: number | null
-          collab_type: string
-          response_count: number
-          updated_at: string
-        }
-        Insert: {
-          avg_engagement_minutes?: number | null
-          avg_min_posts?: number | null
-          avg_warmup_days?: number | null
-          collab_type: string
-          response_count?: number
-          updated_at?: string
-        }
-        Update: {
-          avg_engagement_minutes?: number | null
-          avg_min_posts?: number | null
-          avg_warmup_days?: number | null
-          collab_type?: string
-          response_count?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       collabs: {
         Row: {
           base_pay: number
@@ -308,7 +251,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      recompute_calibration: { Args: never; Returns: undefined }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
