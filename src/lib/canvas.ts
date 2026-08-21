@@ -31,6 +31,9 @@ export interface Collab {
   view_window_days: number;
   min_views_for_payout: number;
   same_cpm_for_all_platforms: boolean;
+  has_per_post_bonus: boolean;
+  per_post_bonus_amount: number;
+  per_post_bonus_view_threshold: number;
   status: string;
   created_at: string;
 }
@@ -178,8 +181,8 @@ export function postEstimatedEarnings(
   return (views / 1000) * cpmRate;
 }
 
-/** Estimated earnings for one logged post, summed across every platform with views entered. */
-export function entryEstimatedEarnings(
+/** CPM earnings for one logged post (no bonus), summed across every platform with views entered. */
+export function entryCpmEarnings(
   entry: ViewEntry,
   collab: Collab,
   rates: PlatformRate[] = [],
@@ -198,6 +201,25 @@ export function entryEstimatedEarnings(
     sum += postEstimatedEarnings(entry.views, Number(collab.cpm_rate), min);
   }
   return sum;
+}
+
+/**
+ * Whether this post earns the per-post bonus: the brand offers one, views are
+ * entered, and the post's total views across platforms meet the threshold.
+ */
+export function entryBonusApplied(entry: ViewEntry, collab: Collab): boolean {
+  if (!collab.has_per_post_bonus || !entryHasViews(entry)) return false;
+  return entryTotalViews(entry) >= Number(collab.per_post_bonus_view_threshold);
+}
+
+/** Estimated earnings for one logged post: per-platform CPM plus the per-post bonus when earned. */
+export function entryEstimatedEarnings(
+  entry: ViewEntry,
+  collab: Collab,
+  rates: PlatformRate[] = [],
+): number {
+  const cpm = entryCpmEarnings(entry, collab, rates);
+  return cpm + (entryBonusApplied(entry, collab) ? Number(collab.per_post_bonus_amount) : 0);
 }
 
 /** Total views logged on an entry across all platforms (legacy total as fallback). */

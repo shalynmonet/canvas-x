@@ -33,6 +33,9 @@ const schema = z.object({
   view_window_days: z.number().int().min(15).max(45),
   min_views_for_payout: z.number().int().min(0).max(10_000_000),
   same_cpm_for_all_platforms: z.boolean(),
+  has_per_post_bonus: z.boolean(),
+  per_post_bonus_amount: z.number().min(0).max(1_000_000),
+  per_post_bonus_view_threshold: z.number().int().min(1).max(100_000_000),
   status: z.enum(["active", "completed", "paused"]),
 });
 
@@ -67,6 +70,9 @@ export function CollabForm({
     view_window_days: collab?.view_window_days ?? 15,
     min_views_for_payout: collab?.min_views_for_payout ?? 1000,
     same_cpm_for_all_platforms: collab?.same_cpm_for_all_platforms ?? true,
+    has_per_post_bonus: collab?.has_per_post_bonus ?? false,
+    per_post_bonus_amount: Number(collab?.per_post_bonus_amount ?? 20),
+    per_post_bonus_view_threshold: collab?.per_post_bonus_view_threshold ?? 1000,
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
   const [platformRates, setPlatformRates] = useState<Record<string, number>>(() =>
@@ -324,6 +330,52 @@ export function CollabForm({
           </Field>
         )}
       </div>
+
+      <Field label="Does this brand pay a bonus per post that hits a view threshold?">
+        <div className="flex gap-2">
+          <Chip
+            active={values.has_per_post_bonus}
+            onClick={() => set("has_per_post_bonus", true)}
+          >
+            Yes
+          </Chip>
+          <Chip
+            active={!values.has_per_post_bonus}
+            onClick={() => set("has_per_post_bonus", false)}
+          >
+            No
+          </Chip>
+        </div>
+      </Field>
+
+      {values.has_per_post_bonus && (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Bonus amount per qualifying post ($)" htmlFor="per_post_bonus_amount">
+            <Input
+              id="per_post_bonus_amount"
+              type="number"
+              min={0}
+              step="0.01"
+              value={values.per_post_bonus_amount}
+              onChange={(e) => set("per_post_bonus_amount", Number(e.target.value))}
+            />
+          </Field>
+          <Field
+            label="Minimum total views to qualify"
+            htmlFor="per_post_bonus_view_threshold"
+            hint="Summed across all platforms"
+          >
+            <Input
+              id="per_post_bonus_view_threshold"
+              type="number"
+              min={1}
+              step="1"
+              value={values.per_post_bonus_view_threshold}
+              onChange={(e) => set("per_post_bonus_view_threshold", Number(e.target.value))}
+            />
+          </Field>
+        </div>
+      )}
 
       <Field label="Minimum daily posts" htmlFor="min_daily_posts">
         <Input

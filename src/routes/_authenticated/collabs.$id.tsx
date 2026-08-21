@@ -23,6 +23,8 @@ import { useCollab, useCollabLogs, usePlatformRates, useViewEntries } from "@/ho
 import {
   collabPlatforms,
   cpmForPlatform,
+  entryBonusApplied,
+  entryCpmEarnings,
   entryEstimatedEarnings,
   entryHasViews,
   entryTotalViews,
@@ -178,6 +180,12 @@ function CollabDetail() {
               .join(" · ")}
           </p>
         )}
+        {collab.has_per_post_bonus && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Post bonus: {money(Number(collab.per_post_bonus_amount))} per post reaching{" "}
+            {Number(collab.per_post_bonus_view_threshold).toLocaleString()} total views
+          </p>
+        )}
       </div>
 
       <section className="card-surface bg-primary p-5 text-primary-foreground">
@@ -223,6 +231,11 @@ function CollabDetail() {
             const perPlatform = entry.platform_views ?? {};
             const hasAny = entryHasViews(entry);
             const postTotal = entryEstimatedEarnings(entry, collab, rates);
+            const cpmPart = entryCpmEarnings(entry, collab, rates);
+            const bonusApplied = entryBonusApplied(entry, collab);
+            const bonusAmt = Number(collab.per_post_bonus_amount);
+            const bonusThreshold = Number(collab.per_post_bonus_view_threshold);
+            const totalViews = entryTotalViews(entry);
             const hasPlatformValues = Object.values(perPlatform).some(
               (v) => v !== null && v !== undefined,
             );
@@ -315,12 +328,28 @@ function CollabDetail() {
                         Previously logged total: {entry.views.toLocaleString()} views
                       </p>
                     )}
-                    {hasAny && (
-                      <p className="border-t border-border pt-2 text-xs font-semibold">
-                        Post total estimate: {money(postTotal)}
-                      </p>
-                    )}
                   </>
+                )}
+
+                {hasAny && (
+                  <p className="border-t border-border pt-2 text-xs">
+                    <span className="font-semibold">CPM earnings: {money(cpmPart)}</span>
+                    {collab.has_per_post_bonus &&
+                      (bonusApplied ? (
+                        <span className="font-semibold text-success">
+                          {" "}
+                          + Post bonus: {money(bonusAmt)} ({totalViews.toLocaleString()} views,
+                          threshold met)
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · Bonus not yet met ({totalViews.toLocaleString()} /{" "}
+                          {bonusThreshold.toLocaleString()} views)
+                        </span>
+                      ))}
+                    <span className="font-semibold"> — Post total: {money(postTotal)}</span>
+                  </p>
                 )}
               </div>
             );
