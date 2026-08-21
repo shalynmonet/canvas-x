@@ -1,0 +1,1 @@
+CREATE POLICY "Service role can insert signup leads" ON public.signup_leads FOR INSERT TO service_role WITH CHECK (true);

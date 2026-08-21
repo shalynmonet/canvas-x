@@ -1,0 +1,1 @@
+ALTER TABLE public.collabs ADD COLUMN view_payout_days INTEGER NOT NULL DEFAULT 15;

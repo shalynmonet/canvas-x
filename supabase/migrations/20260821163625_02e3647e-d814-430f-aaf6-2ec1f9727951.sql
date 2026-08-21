@@ -1,0 +1,1 @@
+CREATE POLICY "Service role can read signup leads" ON public.signup_leads FOR SELECT TO service_role USING (true);

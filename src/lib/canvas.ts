@@ -28,6 +28,7 @@ export interface Collab {
   cpm_rate: number;
   min_daily_posts: number;
   pay_frequency: string;
+  view_payout_days: number;
   status: string;
   created_at: string;
 }

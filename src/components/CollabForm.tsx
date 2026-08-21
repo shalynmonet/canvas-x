@@ -27,6 +27,7 @@ const schema = z.object({
   cpm_rate: z.number().min(0).max(10_000),
   min_daily_posts: z.number().int().min(0).max(20),
   pay_frequency: z.enum(["weekly", "biweekly", "monthly", "on completion"]),
+  view_payout_days: z.number().int().min(15).max(45),
   status: z.enum(["active", "completed", "paused"]),
 });
 
@@ -64,6 +65,7 @@ export function CollabForm({
     cpm_rate: Number(collab?.cpm_rate ?? 0),
     min_daily_posts: collab?.min_daily_posts ?? 1,
     pay_frequency: (collab?.pay_frequency ?? "monthly") as (typeof PAY_FREQUENCIES)[number],
+    view_payout_days: collab?.view_payout_days ?? 15,
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
 
@@ -270,6 +272,20 @@ export function CollabForm({
             </option>
           ))}
         </select>
+      </Field>
+
+      <Field label="What is the duration that views are paid out on?">
+        <div className="flex gap-2">
+          {[15, 30, 45].map((d) => (
+            <Chip
+              key={d}
+              active={values.view_payout_days === d}
+              onClick={() => set("view_payout_days", d)}
+            >
+              {d} days
+            </Chip>
+          ))}
+        </div>
       </Field>
 
       {collab && (
