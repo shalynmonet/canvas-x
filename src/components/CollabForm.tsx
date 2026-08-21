@@ -135,6 +135,32 @@ export function CollabForm({
         />
       </Field>
 
+      <Field label="What platforms will you be posting on for this brand?">
+        <div className="grid grid-cols-2 gap-3">
+          {PLATFORM_OPTIONS.map((platform) => (
+            <label
+              key={platform.value}
+              htmlFor={`platform-${platform.value}`}
+              className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 cursor-pointer hover:bg-secondary"
+            >
+              <Checkbox
+                id={`platform-${platform.value}`}
+                checked={values.platforms.includes(platform.value)}
+                onCheckedChange={(checked) => {
+                  set(
+                    "platforms",
+                    checked
+                      ? [...values.platforms, platform.value]
+                      : values.platforms.filter((p) => p !== platform.value),
+                  );
+                }}
+              />
+              <span className="text-sm font-medium">{platform.label}</span>
+            </label>
+          ))}
+        </div>
+      </Field>
+
       <Field label="Start date" htmlFor="start_date">
         <Input
           id="start_date"
