@@ -332,6 +332,15 @@ function Field({
   );
 }
 
+function parsePlatforms(saved?: string | null): string[] {
+  if (!saved) return [];
+  return saved
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter((p) => PLATFORM_OPTIONS.some((opt) => opt.value === p));
+}
+
+
 function Chip({
   active,
   onClick,
