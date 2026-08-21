@@ -31,7 +31,7 @@ const schema = z.object({
   status: z.enum(["active", "completed", "paused"]),
 });
 
-const ENGAGEMENT_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45];
+const ENGAGEMENT_OPTIONS = [10, 15, 25];
 
 const PLATFORM_OPTIONS = [
   { value: "instagram", label: "Instagram" },
