@@ -274,6 +274,20 @@ export function CollabForm({
         </select>
       </Field>
 
+      <Field label="What is the duration that views are paid out on?">
+        <div className="flex gap-2">
+          {[15, 30, 45].map((d) => (
+            <Chip
+              key={d}
+              active={values.view_payout_days === d}
+              onClick={() => set("view_payout_days", d)}
+            >
+              {d} days
+            </Chip>
+          ))}
+        </div>
+      </Field>
+
       {collab && (
         <Field label="Status" htmlFor="status">
           <select
