@@ -21,11 +21,14 @@ export type Database = {
           cpm_rate: number
           created_at: string
           daily_engagement_minutes: number
+          has_per_post_bonus: boolean
           id: string
           main_poc: string
           min_daily_posts: number
           min_views_for_payout: number
           pay_frequency: string
+          per_post_bonus_amount: number
+          per_post_bonus_view_threshold: number
           platforms: string
           same_cpm_for_all_platforms: boolean
           social_accounts: string
@@ -42,11 +45,14 @@ export type Database = {
           cpm_rate?: number
           created_at?: string
           daily_engagement_minutes?: number
+          has_per_post_bonus?: boolean
           id?: string
           main_poc?: string
           min_daily_posts?: number
           min_views_for_payout?: number
           pay_frequency?: string
+          per_post_bonus_amount?: number
+          per_post_bonus_view_threshold?: number
           platforms?: string
           same_cpm_for_all_platforms?: boolean
           social_accounts?: string
@@ -63,11 +69,14 @@ export type Database = {
           cpm_rate?: number
           created_at?: string
           daily_engagement_minutes?: number
+          has_per_post_bonus?: boolean
           id?: string
           main_poc?: string
           min_daily_posts?: number
           min_views_for_payout?: number
           pay_frequency?: string
+          per_post_bonus_amount?: number
+          per_post_bonus_view_threshold?: number
           platforms?: string
           same_cpm_for_all_platforms?: boolean
           social_accounts?: string
