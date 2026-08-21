@@ -28,7 +28,7 @@ export interface Collab {
   cpm_rate: number;
   min_daily_posts: number;
   pay_frequency: string;
-  view_payout_days: number;
+  view_window_days: number;
   status: string;
   created_at: string;
 }
@@ -43,11 +43,15 @@ export interface DailyLog {
   notes: string | null;
 }
 
-export interface ViewLog {
+export interface ViewEntry {
   id: string;
   collab_id: string;
-  day_number: number;
-  view_count: number;
+  post_date: string;
+  post_index: number;
+  view_window_days: number;
+  target_date: string;
+  views: number | null;
+  logged_at: string;
 }
 
 export const PAY_FREQUENCIES: PayFrequency[] = [
@@ -120,9 +124,15 @@ export function dayNumber(startDate: string, date: string): number {
   return Math.floor(diff) + 1;
 }
 
-export function estimatedEarnings(collab: Collab, views: ViewLog[]): number {
-  const totalViews = views.reduce((sum, v) => sum + (v.view_count || 0), 0);
-  return Number(collab.base_pay) + (totalViews / 1000) * Number(collab.cpm_rate);
+/** Estimated earnings for a single post once its views are entered. */
+export function postEstimatedEarnings(views: number, cpmRate: number): number {
+  return (views / 1000) * cpmRate;
+}
+
+/** Collab-level estimate: base pay + per-post CPM for every entry with views logged so far. */
+export function estimatedEarnings(collab: Collab, entries: ViewEntry[]): number {
+  const totalViews = entries.reduce((sum, e) => sum + (e.views ?? 0), 0);
+  return Number(collab.base_pay) + postEstimatedEarnings(totalViews, Number(collab.cpm_rate));
 }
 
 export type CollabDayState = "complete" | "partial" | "empty";

@@ -31,7 +31,7 @@ export type Database = {
           start_date: string
           status: string
           user_id: string
-          view_payout_days: number
+          view_window_days: number
           warmup_days: number
         }
         Insert: {
@@ -50,7 +50,7 @@ export type Database = {
           start_date?: string
           status?: string
           user_id: string
-          view_payout_days?: number
+          view_window_days?: number
           warmup_days?: number
         }
         Update: {
@@ -69,7 +69,7 @@ export type Database = {
           start_date?: string
           status?: string
           user_id?: string
-          view_payout_days?: number
+          view_window_days?: number
           warmup_days?: number
         }
         Relationships: []
@@ -220,31 +220,40 @@ export type Database = {
         }
         Relationships: []
       }
-      view_logs: {
+      view_entries: {
         Row: {
           collab_id: string
-          day_number: number
           id: string
           logged_at: string
-          view_count: number
+          post_date: string
+          post_index: number
+          target_date: string | null
+          view_window_days: number
+          views: number | null
         }
         Insert: {
           collab_id: string
-          day_number: number
           id?: string
           logged_at?: string
-          view_count?: number
+          post_date: string
+          post_index?: number
+          target_date?: string | null
+          view_window_days?: number
+          views?: number | null
         }
         Update: {
           collab_id?: string
-          day_number?: number
           id?: string
           logged_at?: string
-          view_count?: number
+          post_date?: string
+          post_index?: number
+          target_date?: string | null
+          view_window_days?: number
+          views?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "view_logs_collab_id_fkey"
+            foreignKeyName: "view_entries_collab_id_fkey"
             columns: ["collab_id"]
             isOneToOne: false
             referencedRelation: "collabs"

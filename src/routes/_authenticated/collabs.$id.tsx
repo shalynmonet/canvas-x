@@ -19,14 +19,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useCollab, useCollabLogs, useViewLogs } from "@/hooks/use-canvas";
+import { useCollab, useCollabLogs, useViewEntries } from "@/hooks/use-canvas";
 import {
-  dayNumber,
   estimatedEarnings,
   isInWarmup,
   money,
-  toISODate,
+  postEstimatedEarnings,
   warmupEndDate,
+  type ViewEntry,
 } from "@/lib/canvas";
 
 export const Route = createFileRoute("/_authenticated/collabs/$id")({
@@ -36,12 +36,12 @@ export const Route = createFileRoute("/_authenticated/collabs/$id")({
       {
         name: "description",
         content:
-          "Edit collab terms, review your daily history, log 15-day views and see live earnings estimates.",
+          "Edit collab terms, review your daily history, log per-post views and see live earnings estimates.",
       },
       { property: "og:title", content: "Collab detail — CanvasX" },
       {
         property: "og:description",
-        content: "Terms, history, 15-day views and estimated earnings for one brand deal.",
+        content: "Terms, history, per-post views and estimated earnings for one brand deal.",
       },
     ],
   }),
@@ -54,12 +54,20 @@ export const Route = createFileRoute("/_authenticated/collabs/$id")({
   ),
 });
 
+function formatDate(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+  });
+}
+
 function CollabDetail() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const { data: collab, isLoading } = useCollab(id);
   const { data: logs = [] } = useCollabLogs(id);
-  const { data: views = [] } = useViewLogs(id);
+  const { data: entries = [] } = useViewEntries(id);
   const [tab, setTab] = useState<"views" | "history" | "edit">("views");
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
@@ -67,7 +75,7 @@ function CollabDetail() {
   async function removeCollab() {
     setDeleting(true);
     try {
-      await supabase.from("view_logs").delete().eq("collab_id", id);
+      await supabase.from("view_entries").delete().eq("collab_id", id);
       await supabase.from("daily_logs").delete().eq("collab_id", id);
       const { error } = await supabase.from("collabs").delete().eq("id", id);
       if (error) throw error;
@@ -93,27 +101,26 @@ function CollabDetail() {
     );
   }
 
-  const today = toISODate(new Date());
-  const elapsedDays = Math.min(15, Math.max(0, dayNumber(collab.start_date, today)));
-  const earnings = estimatedEarnings(collab, views);
-  const viewByDay = new Map(views.map((v) => [v.day_number, v]));
+  const earnings = estimatedEarnings(collab, entries);
+  const loggedCount = entries.filter((e) => e.views !== null).length;
 
-  async function saveViews(day: number, count: number) {
-    const existing = viewByDay.get(day);
-    const { error } = await supabase.from("view_logs").upsert(
-      {
-        ...(existing ? { id: existing.id } : {}),
-        collab_id: id,
-        day_number: day,
-        view_count: Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0,
-      },
-      { onConflict: "collab_id,day_number" },
-    );
+  async function saveViews(entry: ViewEntry, raw: string) {
+    const trimmed = raw.trim();
+    const next = trimmed === "" ? null : Math.max(0, Math.round(Number(trimmed)));
+    if (trimmed !== "" && !Number.isFinite(next)) {
+      toast.error("Enter a valid view count");
+      return;
+    }
+    if (next === entry.views) return;
+    const { error } = await supabase
+      .from("view_entries")
+      .update({ views: next })
+      .eq("id", entry.id);
     if (error) {
       toast.error(error.message);
       return;
     }
-    void queryClient.invalidateQueries({ queryKey: ["view_logs", id] });
+    void queryClient.invalidateQueries({ queryKey: ["view_entries", id] });
   }
 
   return (
@@ -127,7 +134,8 @@ function CollabDetail() {
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           {collab.daily_engagement_minutes} min daily engagement · {collab.min_daily_posts} post
-          {collab.min_daily_posts === 1 ? "" : "s"} per day
+          {collab.min_daily_posts === 1 ? "" : "s"} per day · views paid for{" "}
+          {collab.view_window_days} days per post
         </p>
       </div>
 
@@ -137,9 +145,10 @@ function CollabDetail() {
         </p>
         <p className="mt-1 font-display text-4xl font-bold">{money(earnings)}</p>
         <p className="mt-2 text-xs opacity-70">
-          Estimate only — {money(Number(collab.base_pay))} base +{" "}
-          {views.reduce((s, v) => s + v.view_count, 0).toLocaleString()} logged views at{" "}
-          {money(Number(collab.cpm_rate))}/1,000. Final payout comes from the brand.
+          Live estimate — {money(Number(collab.base_pay))} base + CPM on{" "}
+          {entries.reduce((s, e) => s + (e.views ?? 0), 0).toLocaleString()} views logged across{" "}
+          {loggedCount} of {entries.length} post{entries.length === 1 ? "" : "s"}. Updates as
+          more view counts are entered; final payout comes from the brand.
         </p>
       </section>
 
@@ -154,36 +163,56 @@ function CollabDetail() {
                 : "border-border bg-background hover:bg-secondary"
             }`}
           >
-            {t === "views" ? "15-day views" : t}
+            {t === "views" ? "Post views" : t}
           </button>
         ))}
       </div>
 
       {tab === "views" && (
-        <section className="space-y-2">
-          {elapsedDays < 1 && (
+        <section className="space-y-3">
+          {entries.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              View slots unlock once the collab start date arrives.
+              No posts logged yet — check off a post on the Today dashboard and it will appear
+              here with its own views target date.
             </p>
           )}
-          {Array.from({ length: elapsedDays }, (_, i) => i + 1).map((day) => (
-            <div key={day} className="flex items-center gap-3">
-              <label
-                htmlFor={`views-day-${day}`}
-                className="w-16 text-xs font-semibold text-muted-foreground"
-              >
-                Day {day}
-              </label>
-              <Input
-                id={`views-day-${day}`}
-                type="number"
-                min={0}
-                inputMode="numeric"
-                aria-label={`Views logged on day ${day}`}
-                defaultValue={viewByDay.get(day)?.view_count ?? ""}
-                placeholder="views"
-                onBlur={(e) => saveViews(day, Number(e.target.value))}
-              />
+          {entries.map((entry) => (
+            <div key={entry.id} className="card-surface space-y-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">
+                    Posted {formatDate(entry.post_date)}
+                    {entry.post_index > 1 ? ` (post ${entry.post_index})` : ""}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Views entry opens {formatDate(entry.target_date)} · {entry.view_window_days}
+                    -day window
+                  </p>
+                </div>
+                {entry.views !== null && (
+                  <span className="rounded-lg bg-success/10 px-2 py-1 text-xs font-semibold text-success">
+                    Est. {money(postEstimatedEarnings(entry.views, Number(collab.cpm_rate)))}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor={`views-entry-${entry.id}`}
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Views
+                </label>
+                <Input
+                  id={`views-entry-${entry.id}`}
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  aria-label={`Total views for post from ${entry.post_date}`}
+                  defaultValue={entry.views ?? ""}
+                  placeholder={`total views by ${formatDate(entry.target_date)}`}
+                  onBlur={(e) => saveViews(entry, e.target.value)}
+                />
+              </div>
             </div>
           ))}
         </section>
@@ -238,7 +267,7 @@ function CollabDetail() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Remove {collab.brand_name}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Its checklist history and view logs will be deleted permanently.
+                    Its checklist history and view entries will be deleted permanently.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

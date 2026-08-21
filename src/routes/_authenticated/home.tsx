@@ -74,6 +74,39 @@ function HomeScreen() {
     void queryClient.invalidateQueries({ queryKey: ["daily_logs"] });
   }
 
+  /** Mirror post check-offs into per-post view_entries rows. */
+  async function syncViewEntry(collab: Collab, postIndex: number, checked: boolean) {
+    if (checked) {
+      const { error } = await supabase.from("view_entries").upsert(
+        {
+          collab_id: collab.id,
+          post_date: selected,
+          post_index: postIndex,
+          view_window_days: collab.view_window_days,
+        },
+        { onConflict: "collab_id,post_date,post_index", ignoreDuplicates: true },
+      );
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+    } else {
+      // Only remove entries whose views haven't been entered yet.
+      const { error } = await supabase
+        .from("view_entries")
+        .delete()
+        .eq("collab_id", collab.id)
+        .eq("post_date", selected)
+        .eq("post_index", postIndex)
+        .is("views", null);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+    }
+    void queryClient.invalidateQueries({ queryKey: ["view_entries", collab.id] });
+  }
+
   const longDate = new Date(selected + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -185,11 +218,12 @@ function HomeScreen() {
                         label={`Post ${i + 1} of ${collab.min_daily_posts}`}
                         checked={(log?.posted_count ?? 0) > i}
                         disabled={readOnly}
-                        onToggle={(next) =>
-                          upsertLog(collab, {
+                        onToggle={(next) => {
+                          void upsertLog(collab, {
                             posted_count: next ? i + 1 : i,
-                          })
-                        }
+                          });
+                          void syncViewEntry(collab, i + 1, next);
+                        }}
                       />
                     ))}
                   </>

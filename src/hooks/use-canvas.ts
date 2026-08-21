@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Collab, DailyLog, Profile, ViewLog } from "@/lib/canvas";
+import type { Collab, DailyLog, Profile, ViewEntry } from "@/lib/canvas";
 
 export function useProfile() {
   return useQuery({
@@ -92,17 +92,18 @@ export function useCollabLogs(collabId: string) {
   });
 }
 
-export function useViewLogs(collabId: string) {
+export function useViewEntries(collabId: string) {
   return useQuery({
-    queryKey: ["view_logs", collabId],
-    queryFn: async (): Promise<ViewLog[]> => {
+    queryKey: ["view_entries", collabId],
+    queryFn: async (): Promise<ViewEntry[]> => {
       const { data, error } = await supabase
-        .from("view_logs")
+        .from("view_entries")
         .select("*")
         .eq("collab_id", collabId)
-        .order("day_number");
+        .order("post_date", { ascending: false })
+        .order("post_index");
       if (error) throw error;
-      return (data ?? []) as unknown as ViewLog[];
+      return (data ?? []) as unknown as ViewEntry[];
     },
   });
 }
