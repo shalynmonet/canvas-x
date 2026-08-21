@@ -8,10 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  PLATFORM_OPTIONS,
   PAY_FREQUENCIES,
+  platformLabel,
   toISODate,
   warmupEndDate,
   type Collab,
+  type PlatformRate,
 } from "@/lib/canvas";
 
 const schema = z.object({
@@ -29,25 +32,20 @@ const schema = z.object({
   pay_frequency: z.enum(["weekly", "biweekly", "monthly", "on completion"]),
   view_window_days: z.number().int().min(15).max(45),
   min_views_for_payout: z.number().int().min(0).max(10_000_000),
+  same_cpm_for_all_platforms: z.boolean(),
   status: z.enum(["active", "completed", "paused"]),
 });
 
 const ENGAGEMENT_OPTIONS = [10, 15, 25];
 
-const PLATFORM_OPTIONS = [
-  { value: "instagram", label: "Instagram" },
-  { value: "tiktok", label: "TikTok" },
-  { value: "youtube", label: "YouTube" },
-  { value: "facebook", label: "Facebook" },
-];
-
-
 export function CollabForm({
   collab,
+  rates,
   onSaved,
   onCancel,
 }: {
   collab?: Collab;
+  rates?: PlatformRate[];
   onSaved: (id: string) => void;
   onCancel?: () => void;
 }) {
@@ -68,8 +66,12 @@ export function CollabForm({
     pay_frequency: (collab?.pay_frequency ?? "monthly") as (typeof PAY_FREQUENCIES)[number],
     view_window_days: collab?.view_window_days ?? 15,
     min_views_for_payout: collab?.min_views_for_payout ?? 1000,
+    same_cpm_for_all_platforms: collab?.same_cpm_for_all_platforms ?? true,
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
+  const [platformRates, setPlatformRates] = useState<Record<string, number>>(() =>
+    Object.fromEntries((rates ?? []).map((r) => [r.platform, Number(r.cpm_rate)])),
+  );
 
   function set<K extends keyof typeof values>(key: K, value: (typeof values)[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -88,12 +90,21 @@ export function CollabForm({
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("You are signed out");
 
+      if (!values.same_cpm_for_all_platforms) {
+        for (const p of values.platforms) {
+          const rate = platformRates[p] ?? 0;
+          if (!Number.isFinite(rate) || rate < 0 || rate > 10_000) {
+            throw new Error(`Enter a valid CPM rate for ${platformLabel(p)}`);
+          }
+        }
+      }
+
+      let collabId: string;
       if (collab) {
         const { error } = await supabase.from("collabs").update(parsed.data).eq("id", collab.id);
         if (error) throw error;
+        collabId = collab.id;
         toast.success("Collab updated");
-        void queryClient.invalidateQueries();
-        onSaved(collab.id);
       } else {
         const { data, error } = await supabase
           .from("collabs")
@@ -101,12 +112,31 @@ export function CollabForm({
           .select("id")
           .single();
         if (error) throw error;
+        collabId = (data as { id: string }).id;
         toast.success(
           `Collab added — warmup ends ${warmupEndDate(parsed.data.start_date, parsed.data.warmup_days)}`,
         );
-        void queryClient.invalidateQueries();
-        onSaved((data as { id: string }).id);
       }
+
+      // Sync per-platform CPM rates
+      const { error: delError } = await supabase
+        .from("platform_rates")
+        .delete()
+        .eq("collab_id", collabId);
+      if (delError) throw delError;
+      if (!values.same_cpm_for_all_platforms && values.platforms.length > 0) {
+        const { error: insError } = await supabase.from("platform_rates").insert(
+          values.platforms.map((p) => ({
+            collab_id: collabId,
+            platform: p,
+            cpm_rate: platformRates[p] ?? 0,
+          })),
+        );
+        if (insError) throw insError;
+      }
+
+      void queryClient.invalidateQueries();
+      onSaved(collabId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save");
     } finally {
@@ -164,6 +194,51 @@ export function CollabForm({
           ))}
         </div>
       </Field>
+
+      <Field label="Is view payout the same for all platforms?">
+        <div className="flex gap-2">
+          <Chip
+            active={values.same_cpm_for_all_platforms}
+            onClick={() => set("same_cpm_for_all_platforms", true)}
+          >
+            Yes
+          </Chip>
+          <Chip
+            active={!values.same_cpm_for_all_platforms}
+            onClick={() => set("same_cpm_for_all_platforms", false)}
+          >
+            No
+          </Chip>
+        </div>
+      </Field>
+
+      {!values.same_cpm_for_all_platforms &&
+        (values.platforms.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Select at least one platform above to set a CPM rate per platform.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {values.platforms.map((p) => (
+              <Field
+                key={p}
+                label={`${platformLabel(p)} CPM rate ($ / 1,000 views)`}
+                htmlFor={`cpm_${p}`}
+              >
+                <Input
+                  id={`cpm_${p}`}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={platformRates[p] ?? 0}
+                  onChange={(e) =>
+                    setPlatformRates((r) => ({ ...r, [p]: Number(e.target.value) }))
+                  }
+                />
+              </Field>
+            ))}
+          </div>
+        ))}
 
       <Field label="Start date" htmlFor="start_date">
         <Input
@@ -236,16 +311,18 @@ export function CollabForm({
             onChange={(e) => set("base_pay", Number(e.target.value))}
           />
         </Field>
-        <Field label="CPM rate ($ / 1,000 views)" htmlFor="cpm_rate">
-          <Input
-            id="cpm_rate"
-            type="number"
-            min={0}
-            step="0.01"
-            value={values.cpm_rate}
-            onChange={(e) => set("cpm_rate", Number(e.target.value))}
-          />
-        </Field>
+        {values.same_cpm_for_all_platforms && (
+          <Field label="CPM rate ($ / 1,000 views)" htmlFor="cpm_rate">
+            <Input
+              id="cpm_rate"
+              type="number"
+              min={0}
+              step="0.01"
+              value={values.cpm_rate}
+              onChange={(e) => set("cpm_rate", Number(e.target.value))}
+            />
+          </Field>
+        )}
       </div>
 
       <Field label="Minimum daily posts" htmlFor="min_daily_posts">
