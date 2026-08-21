@@ -198,7 +198,9 @@ function CollabDetail() {
           {entries.reduce((s, e) => s + entryTotalViews(e), 0).toLocaleString()} views logged across{" "}
           {loggedCount} of {entries.length} post{entries.length === 1 ? "" : "s"}.
           {Number(collab.min_views_for_payout) > 0 &&
-            ` Posts under ${Number(collab.min_views_for_payout).toLocaleString()} views don’t qualify for CPM.`}{" "}
+            ` Posts under ${Number(collab.min_views_for_payout).toLocaleString()} views don’t qualify for CPM.`}
+          {collab.has_per_post_bonus &&
+            " Includes post bonuses for posts that met their view threshold."}{" "}
           Updates as more view counts are entered; final payout comes from the brand.
         </p>
       </section>
