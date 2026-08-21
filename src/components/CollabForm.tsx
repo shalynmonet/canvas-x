@@ -53,6 +53,7 @@ export function CollabForm({
   const [values, setValues] = useState({
     brand_name: collab?.brand_name ?? "",
     social_accounts: collab?.social_accounts ?? "",
+    platforms: parsePlatforms(collab?.platforms),
     start_date: collab?.start_date ?? toISODate(new Date()),
     source: collab?.source ?? "",
     main_poc: collab?.main_poc ?? "",
