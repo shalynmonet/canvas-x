@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, MessageSquareDot, TrendingUp } from "lucide-react";
 import { OfferCountdown } from "@/components/OfferCountdown";
+import { Logo } from "@/components/Logo";
 import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
 
 export const Route = createFileRoute("/")({
@@ -45,7 +46,7 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-2xl items-center justify-between px-5 py-5">
-        <span className="font-display text-lg font-bold">CanvOps</span>
+        <Logo to="/" />
         <Link to="/auth" className="text-sm font-medium text-accent">
           Sign in
         </Link>

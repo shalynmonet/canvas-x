@@ -1,8 +1,9 @@
-import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,9 +134,7 @@ function AuthPage() {
 
   return (
     <main className="mx-auto max-w-sm px-4 py-8">
-      <Link to="/" className="font-display text-lg font-bold">
-        CanvOps
-      </Link>
+      <Logo to="/" />
       <h1 className="mt-6 text-3xl font-bold">
         {mode === "signup"
           ? isLifetime
