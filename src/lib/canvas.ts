@@ -67,6 +67,16 @@ export interface PlatformRate {
   cpm_rate: number;
 }
 
+export interface TodoItem {
+  id: string;
+  user_id: string;
+  title: string;
+  deadline: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+}
+
 export const PLATFORM_OPTIONS = [
   { value: "instagram", label: "Instagram" },
   { value: "tiktok", label: "TikTok" },

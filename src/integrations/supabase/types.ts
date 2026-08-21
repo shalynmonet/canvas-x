@@ -267,6 +267,36 @@ export type Database = {
         }
         Relationships: []
       }
+      todo_items: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          deadline: string | null
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       view_entries: {
         Row: {
           collab_id: string

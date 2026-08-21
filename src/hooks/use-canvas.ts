@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Collab, DailyLog, PlatformRate, Profile, ViewEntry } from "@/lib/canvas";
+import type { Collab, DailyLog, PlatformRate, Profile, TodoItem, ViewEntry } from "@/lib/canvas";
 
 export function useProfile() {
   return useQuery({
@@ -119,6 +119,20 @@ export function usePlatformRates(collabId?: string) {
         .eq("collab_id", collabId!);
       if (error) throw error;
       return (data ?? []) as unknown as PlatformRate[];
+    },
+  });
+}
+
+export function useTodoItems() {
+  return useQuery({
+    queryKey: ["todo_items"],
+    queryFn: async (): Promise<TodoItem[]> => {
+      const { data, error } = await supabase
+        .from("todo_items")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as TodoItem[];
     },
   });
 }

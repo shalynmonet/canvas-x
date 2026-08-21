@@ -16,6 +16,7 @@ import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedTodoRouteImport } from './routes/_authenticated/todo'
 import { Route as BillingReturnRouteImport } from './routes/billing.return'
 import { Route as AuthenticatedCollabsIdRouteImport } from './routes/_authenticated/collabs.$id'
 import { Route as AuthenticatedCollabsNewRouteImport } from './routes/_authenticated/collabs.new'
@@ -56,6 +57,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTodoRoute = AuthenticatedTodoRouteImport.update({
+  id: '/todo',
+  path: '/todo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const BillingReturnRoute = BillingReturnRouteImport.update({
   id: '/billing/return',
   path: '/billing/return',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/home': typeof AuthenticatedHomeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/todo': typeof AuthenticatedTodoRoute
   '/billing/return': typeof BillingReturnRoute
   '/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/collabs/new': typeof AuthenticatedCollabsNewRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/todo': typeof AuthenticatedTodoRoute
   '/billing/return': typeof BillingReturnRoute
   '/_authenticated/collabs/$id': typeof AuthenticatedCollabsIdRoute
   '/_authenticated/collabs/new': typeof AuthenticatedCollabsNewRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/home'
     | '/settings'
+    | '/todo'
     | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/home'
     | '/settings'
+    | '/todo'
     | '/billing/return'
     | '/collabs/$id'
     | '/collabs/new'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar'
     | '/_authenticated/home'
     | '/_authenticated/settings'
+    | '/_authenticated/todo'
     | '/billing/return'
     | '/_authenticated/collabs/$id'
     | '/_authenticated/collabs/new'
@@ -228,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/todo': {
+      id: '/_authenticated/todo'
+      path: '/todo'
+      fullPath: '/todo'
+      preLoaderRoute: typeof AuthenticatedTodoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/billing/return': {
       id: '/billing/return'
       path: '/billing/return'
@@ -270,6 +289,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTodoRoute: typeof AuthenticatedTodoRoute
   AuthenticatedCollabsIdRoute: typeof AuthenticatedCollabsIdRoute
   AuthenticatedCollabsNewRoute: typeof AuthenticatedCollabsNewRoute
 }
@@ -278,6 +298,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTodoRoute: AuthenticatedTodoRoute,
   AuthenticatedCollabsIdRoute: AuthenticatedCollabsIdRoute,
   AuthenticatedCollabsNewRoute: AuthenticatedCollabsNewRoute,
 }
