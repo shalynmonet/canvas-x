@@ -40,13 +40,13 @@ import {
 export const Route = createFileRoute("/_authenticated/collabs/$id")({
   head: () => ({
     meta: [
-      { title: "Collab detail — CanvasX" },
+      { title: "Collab detail — CanvOps" },
       {
         name: "description",
         content:
           "Edit collab terms, review your daily history, log per-post views and see live earnings estimates.",
       },
-      { property: "og:title", content: "Collab detail — CanvasX" },
+      { property: "og:title", content: "Collab detail — CanvOps" },
       {
         property: "og:description",
         content: "Terms, history, per-post views and estimated earnings for one brand deal.",

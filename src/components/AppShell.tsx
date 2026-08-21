@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-border bg-background backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link to="/home" className="font-display text-lg font-bold tracking-tight">
-            CanvasX
+            CanvOps
           </Link>
           <button
             onClick={signOut}

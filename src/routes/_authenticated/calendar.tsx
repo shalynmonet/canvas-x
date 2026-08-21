@@ -15,12 +15,12 @@ import {
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({
     meta: [
-      { title: "Calendar — CanvasX" },
+      { title: "Calendar — CanvOps" },
       {
         name: "description",
         content: "A monthly calendar of your collab logs — pick any day to review warmups, engagement and posts.",
       },
-      { property: "og:title", content: "Calendar — CanvasX" },
+      { property: "og:title", content: "Calendar — CanvOps" },
       {
         property: "og:description",
         content: "Review your daily collab checklist history on a monthly calendar.",

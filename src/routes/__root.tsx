@@ -80,13 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CanvasX — UGC collab organizer for creators" },
+      { title: "CanvOps — UGC collab organizer for creators" },
       {
         name: "description",
         content:
           "Track every UGC brand deal in one daily checklist: warmups, posts, 15-day views and earnings estimates.",
       },
-      { property: "og:title", content: "CanvasX — UGC collab organizer" },
+      { property: "og:title", content: "CanvOps — UGC collab organizer" },
       {
         property: "og:description",
         content: "One daily checklist for every brand deal.",

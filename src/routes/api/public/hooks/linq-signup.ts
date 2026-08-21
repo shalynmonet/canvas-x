@@ -296,8 +296,8 @@ export const Route = createFileRoute("/api/public/hooks/linq-signup")({
         if (isSignup && (phone || chatId)) {
           const text =
             isLifetimeIntent && lifetimeLive
-              ? `CanvasX lifetime access — only $1! Claim it before 11:59pm Chicago time on Sept 14: ${upgradeUrl}`
-              : `Welcome to CanvasX! Start your 7-day trial here: ${signupUrl}`;
+              ? `CanvOps lifetime access — only $1! Claim it before 11:59pm Chicago time on Sept 14: ${upgradeUrl}`
+              : `Welcome to CanvOps! Start your 7-day trial here: ${signupUrl}`;
           send = await sendLinqMessage({ phone, chatId }, text);
         }
 

@@ -19,12 +19,12 @@ import {
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
-      { title: "Today's checklist — CanvasX" },
+      { title: "Today's checklist — CanvOps" },
       {
         name: "description",
         content: "Check off warmups, engagement time and posts for every active brand collab.",
       },
-      { property: "og:title", content: "Today's checklist — CanvasX" },
+      { property: "og:title", content: "Today's checklist — CanvOps" },
       {
         property: "og:description",
         content: "Your daily collab checklist across every active brand deal.",

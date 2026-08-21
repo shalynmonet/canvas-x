@@ -78,7 +78,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
             ...base,
             mode: "payment",
             "line_items[0][price_data][unit_amount]": "100",
-            "line_items[0][price_data][product_data][name]": "CanvasX Lifetime Access",
+            "line_items[0][price_data][product_data][name]": "CanvOps Lifetime Access",
             "payment_intent_data[metadata][user_id]": userId,
             "metadata[plan]": "lifetime",
           }
@@ -87,7 +87,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
             mode: "subscription",
             "line_items[0][price_data][unit_amount]": "1400",
             "line_items[0][price_data][recurring][interval]": "year",
-            "line_items[0][price_data][product_data][name]": "CanvasX Pro (yearly)",
+            "line_items[0][price_data][product_data][name]": "CanvOps Pro (yearly)",
             "subscription_data[trial_period_days]": "7",
             "subscription_data[metadata][user_id]": userId,
             "metadata[plan]": "yearly",

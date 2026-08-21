@@ -6,13 +6,13 @@ import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CanvasX — UGC collab organizer for creators" },
+      { title: "CanvOps — UGC collab organizer for creators" },
       {
         name: "description",
         content:
           "Track every brand deal in one daily checklist: warmup windows, engagement time, post counts, 15-day view logging and live earnings estimates.",
       },
-      { property: "og:title", content: "CanvasX — UGC collab organizer for creators" },
+      { property: "og:title", content: "CanvOps — UGC collab organizer for creators" },
       {
         property: "og:description",
         content:
@@ -45,7 +45,7 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-2xl items-center justify-between px-5 py-5">
-        <span className="font-display text-lg font-bold">CanvasX</span>
+        <span className="font-display text-lg font-bold">CanvOps</span>
         <Link to="/auth" className="text-sm font-medium text-accent">
           Sign in
         </Link>
@@ -59,7 +59,7 @@ function Landing() {
           Every collab, one checklist, checked off between takes.
         </h1>
         <p className="mt-4 text-base text-muted-foreground">
-          CanvasX keeps warmup windows, daily engagement, post minimums and payouts straight
+          CanvOps keeps warmup windows, daily engagement, post minimums and payouts straight
           across all your brand deals — with defaults calibrated by real creators.
         </p>
 
