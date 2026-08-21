@@ -32,7 +32,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <header className="sticky top-0 z-30 border-b border-border bg-background backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <Link to="/home" className="font-display text-lg font-bold tracking-tight">
+          <Link to="/home" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
+            <img
+              src="/favicon.png"
+              alt=""
+              aria-hidden="true"
+              className="h-7 w-auto object-contain"
+            />
             CanvOps
           </Link>
           <button
