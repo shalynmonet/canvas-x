@@ -65,6 +65,7 @@ export function CollabForm({
     cpm_rate: Number(collab?.cpm_rate ?? 0),
     min_daily_posts: collab?.min_daily_posts ?? 1,
     pay_frequency: (collab?.pay_frequency ?? "monthly") as (typeof PAY_FREQUENCIES)[number],
+    view_payout_days: collab?.view_payout_days ?? 15,
     status: (collab?.status ?? "active") as "active" | "completed" | "paused",
   });
 
