@@ -25,6 +25,7 @@ export type Database = {
           main_poc: string
           min_daily_posts: number
           pay_frequency: string
+          platforms: string
           social_accounts: string
           source: string
           start_date: string
@@ -42,6 +43,7 @@ export type Database = {
           main_poc?: string
           min_daily_posts?: number
           pay_frequency?: string
+          platforms?: string
           social_accounts?: string
           source?: string
           start_date?: string
@@ -59,6 +61,7 @@ export type Database = {
           main_poc?: string
           min_daily_posts?: number
           pay_frequency?: string
+          platforms?: string
           social_accounts?: string
           source?: string
           start_date?: string

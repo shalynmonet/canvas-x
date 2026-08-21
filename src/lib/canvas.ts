@@ -18,6 +18,7 @@ export interface Collab {
   user_id: string;
   brand_name: string;
   social_accounts: string;
+  platforms: string;
   start_date: string;
   source: string;
   main_poc: string;

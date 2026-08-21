@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +17,7 @@ import {
 const schema = z.object({
   brand_name: z.string().trim().min(1, "Brand name is required").max(80),
   social_accounts: z.string().trim().max(200),
+  platforms: z.string().max(200),
   start_date: z.string().min(10, "Pick a start date"),
   source: z.string().trim().max(80),
   main_poc: z.string().trim().max(80),
@@ -29,6 +31,14 @@ const schema = z.object({
 });
 
 const ENGAGEMENT_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45];
+
+const PLATFORM_OPTIONS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "youtube", label: "YouTube" },
+  { value: "facebook", label: "Facebook" },
+];
+
 
 export function CollabForm({
   collab,
@@ -44,6 +54,7 @@ export function CollabForm({
   const [values, setValues] = useState({
     brand_name: collab?.brand_name ?? "",
     social_accounts: collab?.social_accounts ?? "",
+    platforms: parsePlatforms(collab?.platforms),
     start_date: collab?.start_date ?? toISODate(new Date()),
     source: collab?.source ?? "",
     main_poc: collab?.main_poc ?? "",
@@ -62,7 +73,8 @@ export function CollabForm({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    const parsed = schema.safeParse(values);
+    const payload = { ...values, platforms: values.platforms.join(",") };
+    const parsed = schema.safeParse(payload);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Check the form");
       return;
@@ -121,6 +133,32 @@ export function CollabForm({
           maxLength={200}
           onChange={(e) => set("social_accounts", e.target.value)}
         />
+      </Field>
+
+      <Field label="What platforms will you be posting on for this brand?">
+        <div className="grid grid-cols-2 gap-3">
+          {PLATFORM_OPTIONS.map((platform) => (
+            <label
+              key={platform.value}
+              htmlFor={`platform-${platform.value}`}
+              className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 cursor-pointer hover:bg-secondary"
+            >
+              <Checkbox
+                id={`platform-${platform.value}`}
+                checked={values.platforms.includes(platform.value)}
+                onCheckedChange={(checked) => {
+                  set(
+                    "platforms",
+                    checked
+                      ? [...values.platforms, platform.value]
+                      : values.platforms.filter((p) => p !== platform.value),
+                  );
+                }}
+              />
+              <span className="text-sm font-medium">{platform.label}</span>
+            </label>
+          ))}
+        </div>
       </Field>
 
       <Field label="Start date" htmlFor="start_date">
@@ -293,6 +331,15 @@ function Field({
     </div>
   );
 }
+
+function parsePlatforms(saved?: string | null): string[] {
+  if (!saved) return [];
+  return saved
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter((p) => PLATFORM_OPTIONS.some((opt) => opt.value === p));
+}
+
 
 function Chip({
   active,

@@ -1,0 +1,1 @@
+ALTER TABLE public.collabs ADD COLUMN platforms TEXT NOT NULL DEFAULT '';
