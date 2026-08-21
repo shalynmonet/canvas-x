@@ -203,7 +203,7 @@ export function entryEstimatedEarnings(
 /** Total views logged on an entry across all platforms (legacy total as fallback). */
 export function entryTotalViews(entry: ViewEntry): number {
   const perPlatform = entry.platform_views ?? {};
-  const sum = Object.values(perPlatform).reduce((s, v) => s + (v ?? 0), 0);
+  const sum = Object.values(perPlatform).reduce<number>((s, v) => s + (v ?? 0), 0);
   if (sum > 0) return sum;
   return entry.views ?? 0;
 }
