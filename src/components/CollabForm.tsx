@@ -73,7 +73,8 @@ export function CollabForm({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    const parsed = schema.safeParse(values);
+    const payload = { ...values, platforms: values.platforms.join(",") };
+    const parsed = schema.safeParse(payload);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Check the form");
       return;
