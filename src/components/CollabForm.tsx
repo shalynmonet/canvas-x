@@ -31,6 +31,14 @@ const schema = z.object({
 
 const ENGAGEMENT_OPTIONS = [10, 15, 20, 25, 30, 35, 40, 45];
 
+const PLATFORM_OPTIONS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "youtube", label: "YouTube" },
+  { value: "facebook", label: "Facebook" },
+];
+
+
 export function CollabForm({
   collab,
   onSaved,
