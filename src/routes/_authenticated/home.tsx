@@ -5,15 +5,17 @@ import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { AccessGate } from "@/components/AccessGate";
-import { useCollabs, useDailyLogs } from "@/hooks/use-canvas";
+import { useCollabs, useDailyLogs, useTodoItems } from "@/hooks/use-canvas";
 import { supabase } from "@/integrations/supabase/client";
 import {
   collabDayState,
   currentWeek,
   isInWarmup,
+  parseISODate,
   toISODate,
   type Collab,
   type DailyLog,
+  type TodoItem,
 } from "@/lib/canvas";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -48,10 +50,34 @@ function HomeScreen() {
   const week = useMemo(() => currentWeek(), []);
   const { data: collabs = [], isLoading } = useCollabs();
   const { data: logs = [] } = useDailyLogs(selected);
+  const { data: todos = [] } = useTodoItems();
   const queryClient = useQueryClient();
 
   const active = collabs.filter((c) => c.status === "active");
   const logByCollab = new Map(logs.map((l) => [l.collab_id, l]));
+
+  const dueTodos = useMemo(
+    () =>
+      todos
+        .filter((t) => t.deadline === selected)
+        .sort((a, b) => Number(a.completed) - Number(b.completed)),
+    [todos, selected],
+  );
+
+  async function toggleTodo(item: TodoItem, next: boolean) {
+    const { error } = await supabase
+      .from("todo_items")
+      .update({
+        completed: next,
+        completed_at: next ? new Date().toISOString() : null,
+      })
+      .eq("id", item.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    void queryClient.invalidateQueries({ queryKey: ["todo_items"] });
+  }
 
   async function upsertLog(collab: Collab, patch: Partial<DailyLog>) {
     const existing = logByCollab.get(collab.id);
