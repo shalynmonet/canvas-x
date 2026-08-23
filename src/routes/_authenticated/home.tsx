@@ -259,6 +259,48 @@ function HomeScreen() {
           );
         })}
       </div>
+
+      {dueTodos.length > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+              {selected === today
+                ? "To-do's due today"
+                : `To-do's due ${parseISODate(selected).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}`}
+            </h2>
+            <Link
+              to="/todo"
+              className="flex items-center gap-0.5 text-xs font-medium text-accent"
+            >
+              All tasks <ChevronRight className="size-3.5" />
+            </Link>
+          </div>
+          {dueTodos.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => toggleTodo(item, !item.completed)}
+              className={`card-surface flex w-full items-center gap-3 px-3 py-3 text-left text-sm font-medium transition-colors ${
+                item.completed ? "opacity-60" : "hover:bg-secondary"
+              }`}
+            >
+              <span
+                className={`flex size-6 shrink-0 items-center justify-center rounded-lg border ${
+                  item.completed
+                    ? "border-success bg-success text-success-foreground"
+                    : "border-input"
+                }`}
+              >
+                {item.completed && <Check className="size-4" />}
+              </span>
+              <span className={item.completed ? "line-through" : ""}>{item.title}</span>
+            </button>
+          ))}
+        </section>
+      )}
     </div>
   );
 }
