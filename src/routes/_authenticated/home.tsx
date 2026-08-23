@@ -5,15 +5,17 @@ import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { AccessGate } from "@/components/AccessGate";
-import { useCollabs, useDailyLogs } from "@/hooks/use-canvas";
+import { useCollabs, useDailyLogs, useTodoItems } from "@/hooks/use-canvas";
 import { supabase } from "@/integrations/supabase/client";
 import {
   collabDayState,
   currentWeek,
   isInWarmup,
+  parseISODate,
   toISODate,
   type Collab,
   type DailyLog,
+  type TodoItem,
 } from "@/lib/canvas";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -48,10 +50,34 @@ function HomeScreen() {
   const week = useMemo(() => currentWeek(), []);
   const { data: collabs = [], isLoading } = useCollabs();
   const { data: logs = [] } = useDailyLogs(selected);
+  const { data: todos = [] } = useTodoItems();
   const queryClient = useQueryClient();
 
   const active = collabs.filter((c) => c.status === "active");
   const logByCollab = new Map(logs.map((l) => [l.collab_id, l]));
+
+  const dueTodos = useMemo(
+    () =>
+      todos
+        .filter((t) => t.deadline === selected)
+        .sort((a, b) => Number(a.completed) - Number(b.completed)),
+    [todos, selected],
+  );
+
+  async function toggleTodo(item: TodoItem, next: boolean) {
+    const { error } = await supabase
+      .from("todo_items")
+      .update({
+        completed: next,
+        completed_at: next ? new Date().toISOString() : null,
+      })
+      .eq("id", item.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    void queryClient.invalidateQueries({ queryKey: ["todo_items"] });
+  }
 
   async function upsertLog(collab: Collab, patch: Partial<DailyLog>) {
     const existing = logByCollab.get(collab.id);
@@ -233,6 +259,48 @@ function HomeScreen() {
           );
         })}
       </div>
+
+      {dueTodos.length > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+              {selected === today
+                ? "To-do's due today"
+                : `To-do's due ${parseISODate(selected).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}`}
+            </h2>
+            <Link
+              to="/todo"
+              className="flex items-center gap-0.5 text-xs font-medium text-accent"
+            >
+              All tasks <ChevronRight className="size-3.5" />
+            </Link>
+          </div>
+          {dueTodos.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => toggleTodo(item, !item.completed)}
+              className={`card-surface flex w-full items-center gap-3 px-3 py-3 text-left text-sm font-medium transition-colors ${
+                item.completed ? "opacity-60" : "hover:bg-secondary"
+              }`}
+            >
+              <span
+                className={`flex size-6 shrink-0 items-center justify-center rounded-lg border ${
+                  item.completed
+                    ? "border-success bg-success text-success-foreground"
+                    : "border-input"
+                }`}
+              >
+                {item.completed && <Check className="size-4" />}
+              </span>
+              <span className={item.completed ? "line-through" : ""}>{item.title}</span>
+            </button>
+          ))}
+        </section>
+      )}
     </div>
   );
 }
