@@ -31,14 +31,9 @@ const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(8, "Use at least 8 characters").max(72),
-  phone: z
-    .string()
-    .trim()
-    .min(7, "Enter a phone number the reminders can reach")
-    .max(20)
-    .regex(/^[+0-9()\-.\s]+$/, "Digits, spaces and + only"),
   reminder_time: z.string().max(5),
 });
+
 
 function AuthPage() {
   const navigate = useNavigate();
