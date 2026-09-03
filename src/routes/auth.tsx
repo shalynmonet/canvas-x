@@ -92,7 +92,7 @@ function AuthPage() {
             : `${window.location.origin}/home`,
           data: {
             name: parsed.data.name,
-            phone: parsed.data.phone,
+            reminder_time: parsed.data.reminder_time,
             reminder_time: parsed.data.reminder_time,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
