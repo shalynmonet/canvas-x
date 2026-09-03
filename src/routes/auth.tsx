@@ -185,21 +185,7 @@ function AuthPage() {
 
         {mode === "signup" && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={values.phone}
-                maxLength={20}
-                onChange={(e) => set("phone", e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Used only to text <em>you</em> your own accountability reminders — never
-                shared with brands.
-              </p>
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="reminder_time">Reminder time (optional)</Label>
               <Input
