@@ -93,7 +93,7 @@ function AuthPage() {
           data: {
             name: parsed.data.name,
             reminder_time: parsed.data.reminder_time,
-            reminder_time: parsed.data.reminder_time,
+
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         },
