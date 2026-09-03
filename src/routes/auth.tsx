@@ -54,9 +54,9 @@ function AuthPage() {
     name: "",
     email: "",
     password: "",
-    phone: "",
     reminder_time: "",
   });
+
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
 
