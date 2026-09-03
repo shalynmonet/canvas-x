@@ -21,12 +21,12 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { title: "Settings & reminders — CanvOps" },
       {
         name: "description",
-        content: "Manage your reminder text time, phone number and CanvOps subscription.",
+        content: "Manage your daily reminder email time and CanvOps subscription.",
       },
       { property: "og:title", content: "Settings & reminders — CanvOps" },
       {
         property: "og:description",
-        content: "Reminder time, phone number and subscription controls.",
+        content: "Reminder email time and subscription controls.",
       },
     ],
   }),
@@ -56,15 +56,11 @@ function isValidTimezone(tz: string): boolean {
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .regex(/^[+0-9()\-.\s]*$/, "Digits, spaces and + only"),
   reminder_time: z.string().max(5),
   reminder_enabled: z.boolean(),
   timezone: z.string().refine(isValidTimezone, "Unknown timezone"),
 });
+
 
 function SettingsScreen() {
   const { data: profile } = useProfile();
@@ -72,7 +68,6 @@ function SettingsScreen() {
   const sync = useServerFn(syncSubscription);
   const [values, setValues] = useState({
     name: "",
-    phone: "",
     reminder_time: "",
     reminder_enabled: false,
     timezone: "UTC",
@@ -83,12 +78,12 @@ function SettingsScreen() {
     if (!profile) return;
     setValues({
       name: profile.name,
-      phone: profile.phone ?? "",
       reminder_time: profile.reminder_time ? profile.reminder_time.slice(0, 5) : "",
       reminder_enabled: profile.reminder_enabled,
       timezone: profile.timezone || detectTimezone(),
     });
   }, [profile]);
+
 
   useEffect(() => {
     if (profile?.stripe_subscription_id) {
@@ -111,8 +106,8 @@ function SettingsScreen() {
       .from("profiles")
       .update({
         name: parsed.data.name,
-        phone: parsed.data.phone || null,
         reminder_time: parsed.data.reminder_time || null,
+
         reminder_enabled: parsed.data.reminder_time ? parsed.data.reminder_enabled : false,
         timezone: parsed.data.timezone || "UTC",
         updated_at: new Date().toISOString(),
@@ -142,19 +137,6 @@ function SettingsScreen() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone number</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={values.phone}
-            maxLength={20}
-            onChange={(e) => setValues((v) => ({ ...v, phone: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">
-            Reminders text this number only — it's your own accountability nudge.
-          </p>
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="reminder_time">Reminder time</Label>
           <Input
             id="reminder_time"
@@ -171,9 +153,9 @@ function SettingsScreen() {
         </div>
         <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
           <div>
-            <p className="text-sm font-medium">Daily reminder texts</p>
+            <p className="text-sm font-medium">Daily reminder emails</p>
             <p className="text-xs text-muted-foreground">
-              Only sent when something is still unchecked.
+              Sent to your account email, only when something is still unchecked.
             </p>
           </div>
           <Switch
@@ -183,6 +165,7 @@ function SettingsScreen() {
             }
           />
         </div>
+
 
         <div className="space-y-2">
           <Label htmlFor="timezone">Reminder timezone</Label>

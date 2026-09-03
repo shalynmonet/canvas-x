@@ -31,14 +31,9 @@ const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(8, "Use at least 8 characters").max(72),
-  phone: z
-    .string()
-    .trim()
-    .min(7, "Enter a phone number the reminders can reach")
-    .max(20)
-    .regex(/^[+0-9()\-.\s]+$/, "Digits, spaces and + only"),
   reminder_time: z.string().max(5),
 });
+
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -59,9 +54,9 @@ function AuthPage() {
     name: "",
     email: "",
     password: "",
-    phone: "",
     reminder_time: "",
   });
+
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
 
@@ -97,8 +92,8 @@ function AuthPage() {
             : `${window.location.origin}/home`,
           data: {
             name: parsed.data.name,
-            phone: parsed.data.phone,
             reminder_time: parsed.data.reminder_time,
+
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         },
@@ -190,21 +185,7 @@ function AuthPage() {
 
         {mode === "signup" && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={values.phone}
-                maxLength={20}
-                onChange={(e) => set("phone", e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Used only to text <em>you</em> your own accountability reminders — never
-                shared with brands.
-              </p>
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="reminder_time">Reminder time (optional)</Label>
               <Input
@@ -214,7 +195,7 @@ function AuthPage() {
                 onChange={(e) => set("reminder_time", e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Set a time and reminders switch on automatically. Leave blank for none.
+                Set a time and reminder emails switch on automatically. Leave blank for none.
               </p>
             </div>
           </>

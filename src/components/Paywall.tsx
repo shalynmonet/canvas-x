@@ -67,7 +67,7 @@ const perks = [
   "Unlimited collabs with calibrated defaults",
   "Daily warmup, engagement and post checklists",
   "15-day view logging with live earnings estimates",
-  "Accountability texts from the reminder agent",
+  "Accountability emails from the reminder agent",
 ];
 
 export function PlanOptions() {
