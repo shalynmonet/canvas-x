@@ -107,7 +107,7 @@ function SettingsScreen() {
       .update({
         name: parsed.data.name,
         reminder_time: parsed.data.reminder_time || null,
-        reminder_time: parsed.data.reminder_time || null,
+
         reminder_enabled: parsed.data.reminder_time ? parsed.data.reminder_enabled : false,
         timezone: parsed.data.timezone || "UTC",
         updated_at: new Date().toISOString(),
