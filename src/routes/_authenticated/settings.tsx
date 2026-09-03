@@ -138,19 +138,6 @@ function SettingsScreen() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone number</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={values.phone}
-            maxLength={20}
-            onChange={(e) => setValues((v) => ({ ...v, phone: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">
-            Reminders text this number only — it's your own accountability nudge.
-          </p>
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="reminder_time">Reminder time</Label>
           <Input
             id="reminder_time"
@@ -167,9 +154,9 @@ function SettingsScreen() {
         </div>
         <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
           <div>
-            <p className="text-sm font-medium">Daily reminder texts</p>
+            <p className="text-sm font-medium">Daily reminder emails</p>
             <p className="text-xs text-muted-foreground">
-              Only sent when something is still unchecked.
+              Sent to your account email, only when something is still unchecked.
             </p>
           </div>
           <Switch
@@ -179,6 +166,7 @@ function SettingsScreen() {
             }
           />
         </div>
+
 
         <div className="space-y-2">
           <Label htmlFor="timezone">Reminder timezone</Label>
