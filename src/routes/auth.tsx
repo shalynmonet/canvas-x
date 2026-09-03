@@ -195,7 +195,7 @@ function AuthPage() {
                 onChange={(e) => set("reminder_time", e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Set a time and reminders switch on automatically. Leave blank for none.
+                Set a time and reminder emails switch on automatically. Leave blank for none.
               </p>
             </div>
           </>
