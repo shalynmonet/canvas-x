@@ -56,15 +56,11 @@ function isValidTimezone(tz: string): boolean {
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
-  phone: z
-    .string()
-    .trim()
-    .max(20)
-    .regex(/^[+0-9()\-.\s]*$/, "Digits, spaces and + only"),
   reminder_time: z.string().max(5),
   reminder_enabled: z.boolean(),
   timezone: z.string().refine(isValidTimezone, "Unknown timezone"),
 });
+
 
 function SettingsScreen() {
   const { data: profile } = useProfile();
