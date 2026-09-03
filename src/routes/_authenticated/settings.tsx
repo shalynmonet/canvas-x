@@ -68,7 +68,6 @@ function SettingsScreen() {
   const sync = useServerFn(syncSubscription);
   const [values, setValues] = useState({
     name: "",
-    phone: "",
     reminder_time: "",
     reminder_enabled: false,
     timezone: "UTC",
@@ -79,12 +78,12 @@ function SettingsScreen() {
     if (!profile) return;
     setValues({
       name: profile.name,
-      phone: profile.phone ?? "",
       reminder_time: profile.reminder_time ? profile.reminder_time.slice(0, 5) : "",
       reminder_enabled: profile.reminder_enabled,
       timezone: profile.timezone || detectTimezone(),
     });
   }, [profile]);
+
 
   useEffect(() => {
     if (profile?.stripe_subscription_id) {
