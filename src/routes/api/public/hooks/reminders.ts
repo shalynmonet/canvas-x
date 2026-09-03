@@ -20,13 +20,15 @@ interface LogRow {
 interface ProfileRow {
   id: string;
   name: string;
-  phone: string | null;
   reminder_time: string | null;
   reminder_enabled: boolean;
   timezone: string;
   subscription_status: string;
   trial_ends_at: string;
 }
+
+const FROM_ADDRESS = "Canvas <reminders@alerts.canvops.com>";
+const SUBJECT = "Canvas: you've got unfinished tasks today";
 
 function minutesOfDay(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -51,30 +53,60 @@ function localTimeComponents(utc: Date, timeZone: string): { hours: number; minu
   };
 }
 
-async function sendLinqMessage(phone: string, message: string) {
-  const key = process.env["LINQ_API_KEY"];
-  if (!key) return { ok: false, error: "Linq is not configured" };
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+async function sendReminderEmail(
+  to: string,
+  name: string,
+  incomplete: string[],
+  appUrl: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const key = process.env["RESEND_API_KEY"];
+  if (!key) return { ok: false, error: "Resend is not configured" };
+
+  const greeting = name ? `Hi ${name},` : "Hi,";
+  const text = [
+    greeting,
+    "",
+    "You still have unfinished collab tasks today:",
+    ...incomplete.map((line) => `• ${line}`),
+    "",
+    `Check them off here: ${appUrl}/home`,
+  ].join("\n");
+  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#111827">
+    <p>${escapeHtml(greeting)}</p>
+    <p>You still have unfinished collab tasks today:</p>
+    <ul>${incomplete.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
+    <p><a href="${appUrl}/home">Check them off in CanvOps</a></p>
+  </div>`;
+
   try {
-    const res = await fetch("https://api.linqapp.com/v3/messages", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ to: [phone], message: { parts: [{ type: "text", value: message }] } }),
+      body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject: SUBJECT, text, html }),
     });
-
     if (!res.ok) {
-      console.error("Linq send failed", res.status, await res.text().catch(() => ""));
-      return { ok: false, error: `Linq responded ${res.status}` };
+      const body = await res.text().catch(() => "");
+      console.error("Resend send failed", res.status, body);
+      return { ok: false, error: `Resend responded ${res.status}` };
     }
     return { ok: true };
   } catch (error) {
-    console.error("Linq send error", error);
-    return { ok: false, error: "Could not reach Linq" };
+    console.error("Resend send error", error);
+    return { ok: false, error: "Could not reach Resend" };
   }
 }
 
 /**
- * Reminder Agent (Linq). Runs every 15 minutes via a scheduled job.
- * Texts creators only when an active collab is still incomplete for today.
+ * Reminder Agent (email via Resend). Runs every 15 minutes via a scheduled job.
+ * Emails creators only when an active collab is still incomplete for today.
  */
 export const Route = createFileRoute("/api/public/hooks/reminders")({
   server: {
@@ -96,7 +128,6 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-
         const db = createClient(url, serviceKey, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
@@ -106,16 +137,15 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
         const { data: profiles, error } = await db
           .from("profiles")
-          .select("id, name, phone, reminder_time, reminder_enabled, timezone, subscription_status, trial_ends_at")
-          .eq("reminder_enabled", true)
-          .not("phone", "is", null);
+          .select("id, name, reminder_time, reminder_enabled, timezone, subscription_status, trial_ends_at")
+          .eq("reminder_enabled", true);
         if (error) return Response.json({ error: error.message }, { status: 500 });
 
         let sent = 0;
         let skipped = 0;
 
         for (const profile of (profiles ?? []) as ProfileRow[]) {
-          if (!profile.reminder_time || !profile.phone) continue;
+          if (!profile.reminder_time) continue;
 
           const tz = profile.timezone || "UTC";
           const local = localTimeComponents(now, tz);
@@ -126,6 +156,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
 
           const active =
             profile.subscription_status === "active" ||
+            profile.subscription_status === "lifetime" ||
             (profile.subscription_status === "trialing" &&
               new Date(profile.trial_ends_at).getTime() > now.getTime());
           if (!active) continue;
@@ -172,7 +203,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
             const inWarmup = today < warmupEnd.toISOString().slice(0, 10);
             if (inWarmup) {
               if (!log?.warmed_up) {
-                incomplete.push(`${collab.brand_name} — warmup not logged`);
+                incomplete.push(`${collab.brand_name}: warmup not logged`);
                 flagged.push(collab.id);
               }
               continue;
@@ -183,7 +214,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
               const parts: string[] = [];
               if (!log?.engaged) parts.push("engagement not checked");
               if (missing > 0) parts.push(`${missing} post${missing === 1 ? "" : "s"} still needed`);
-              incomplete.push(`${collab.brand_name} — ${parts.join(", ")}`);
+              incomplete.push(`${collab.brand_name}: ${parts.join(", ")}`);
               flagged.push(collab.id);
             }
           }
@@ -193,12 +224,19 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
             continue;
           }
 
-          const message = `Canvas: You haven't logged ${incomplete.join("; ")} yet today. Tap to check off: ${appUrl}/home`;
-          const result = await sendLinqMessage(profile.phone, message);
+          const { data: userData } = await db.auth.admin.getUserById(profile.id);
+          const email = userData?.user?.email;
+          if (!email) {
+            skipped += 1;
+            continue;
+          }
+
+          const result = await sendReminderEmail(email, profile.name, incomplete, appUrl);
+          const summary = `Canvas email reminder: ${incomplete.join("; ")}`;
           await db.from("reminder_logs").insert({
             user_id: profile.id,
             collab_ids_flagged: flagged.join(","),
-            message: result.ok ? message : `${message} [not delivered: ${result.error}]`,
+            message: result.ok ? summary : `${summary} [not delivered: ${result.error}]`,
           });
           if (result.ok) sent += 1;
         }
