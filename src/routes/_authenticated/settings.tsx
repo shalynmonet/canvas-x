@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { title: "Settings & reminders — CanvOps" },
       {
         name: "description",
-        content: "Manage your reminder text time, phone number and CanvOps subscription.",
+        content: "Manage your daily reminder email time and CanvOps subscription.",
       },
       { property: "og:title", content: "Settings & reminders — CanvOps" },
       {
