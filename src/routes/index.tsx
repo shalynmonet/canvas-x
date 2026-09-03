@@ -28,12 +28,12 @@ const features = [
   {
     icon: CalendarCheck,
     title: "Check off today in seconds",
-    body: "One card per collab: warmup, engagement time, and a box per required post.",
+    body: "One card per collab: warmup, engagement time, and a box per required deliverable.",
   },
   {
     icon: TrendingUp,
     title: "Know what you've earned",
-    body: "Log 15-day views and see base pay plus CPM earnings update live.",
+    body: "Log cycle views and see base pay plus CPM earnings update live.",
   },
   {
     icon: MessageSquareDot,
@@ -61,7 +61,7 @@ function Landing() {
         </h1>
         <p className="mt-4 text-base text-muted-foreground">
           CanvOps keeps warmup windows, daily engagement, post minimums and payouts straight
-          across all your brand deals — with defaults calibrated by real creators.
+          across all your brand deals.
         </p>
 
         <div className="mt-8 rounded-2xl border border-accent/40 bg-secondary/40 p-4 text-left">
