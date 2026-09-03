@@ -106,7 +106,7 @@ function SettingsScreen() {
       .from("profiles")
       .update({
         name: parsed.data.name,
-        phone: parsed.data.phone || null,
+        reminder_time: parsed.data.reminder_time || null,
         reminder_time: parsed.data.reminder_time || null,
         reminder_enabled: parsed.data.reminder_time ? parsed.data.reminder_enabled : false,
         timezone: parsed.data.timezone || "UTC",
