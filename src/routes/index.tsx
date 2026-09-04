@@ -83,11 +83,10 @@ function Landing() {
             Claim your ${LIFETIME_PRICE_USD} lifetime access
           </Link>
           <Link
-            to="/auth"
-            search={{ plan: "yearly" }}
+            to="/demo"
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary"
           >
-            Start 7-day trial, then ${YEARLY_PRICE_USD}/year
+            Try the live demo first
           </Link>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
