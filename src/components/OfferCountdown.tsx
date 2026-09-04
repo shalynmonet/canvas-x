@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { formatCountdown, lifetimeOfferMsLeft } from "@/lib/canvas";
+import { formatCountdown, lifetimeOfferMsLeft, LIFETIME_PRICE_USD } from "@/lib/canvas";
 
 /** Live countdown to the $1 lifetime offer deadline (11:59pm Central, Sept 14 2026). */
 export function useOfferCountdown() {
