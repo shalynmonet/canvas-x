@@ -116,12 +116,15 @@ export const PAY_FREQUENCIES: PayFrequency[] = [
 ];
 
 export const MONTHLY_PRICE_USD = 9;
-/** Standard yearly subscription price after the 7-day trial. */
-export const YEARLY_PRICE_USD = 14;
+/** Yearly subscription price. */
+export const YEARLY_PRICE_USD = 44;
 /** Launch-offer lifetime price. */
-export const LIFETIME_PRICE_USD = 1;
+export const LIFETIME_PRICE_USD = 44;
 
-/** Lifetime offer deadline: 11:59pm Central on September 14, 2026 (CDT, UTC-5). */
+/**
+ * Lifetime offer runs for 14 days from launch — ends 11:59pm Central
+ * on September 14, 2026 (CDT, UTC-5).
+ */
 export const LIFETIME_OFFER_ENDS_AT = "2026-09-15T04:59:00Z";
 
 export function lifetimeOfferMsLeft(now: number = Date.now()): number {
