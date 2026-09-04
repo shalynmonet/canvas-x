@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,8 +7,14 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { readDemoCollab } from "@/lib/demo-collab";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: z.object({
+    plan: z.string().optional(),
+    demo: z.string().optional(),
+    start: z.string().optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in to CanvOps — UGC collab organizer" },
@@ -39,15 +45,17 @@ function AuthPage() {
   const navigate = useNavigate();
   const href = useRouterState({ select: (state) => state.location.href });
   const requestedPlan = new URL(href, "http://canvasx.local").searchParams.get("plan");
-  const plan = requestedPlan === "lifetime" || requestedPlan === "yearly" ? requestedPlan : null;
+  const plan =
+    requestedPlan === "lifetime" || requestedPlan === "yearly" || requestedPlan === "monthly"
+      ? requestedPlan
+      : null;
   const isLifetime = plan === "lifetime";
+  const [fromDemo, setFromDemo] = useState(false);
+  useEffect(() => setFromDemo(readDemoCollab() !== null), []);
 
   function afterAuth() {
-    if (plan) {
-      window.location.href = `/upgrade?plan=${plan}&start=1`;
-      return;
-    }
-    navigate({ to: "/home" });
+    // Every account goes through checkout — there is no free trial.
+    window.location.href = plan ? `/upgrade?plan=${plan}&start=1` : "/upgrade";
   }
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const [values, setValues] = useState({
@@ -89,7 +97,7 @@ function AuthPage() {
         options: {
           emailRedirectTo: plan
             ? `${window.location.origin}/upgrade?plan=${plan}&start=1`
-            : `${window.location.origin}/home`,
+            : `${window.location.origin}/upgrade`,
           data: {
             name: parsed.data.name,
             reminder_time: parsed.data.reminder_time,
@@ -100,9 +108,7 @@ function AuthPage() {
       });
       if (error) throw error;
       if (data.session) {
-        toast.success(
-          plan ? "Account created — opening checkout" : "Your 7-day free trial has started",
-        );
+        toast.success("Account created — choose your plan");
         afterAuth();
       } else {
         setCheckEmail(true);
@@ -119,9 +125,8 @@ function AuthPage() {
       <main className="mx-auto max-w-sm px-4 py-20 text-center">
         <h1 className="text-2xl font-bold">Confirm your email</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          We sent a confirmation link to {values.email}. Open it and {isLifetime
-            ? "we’ll take you straight to the $1 lifetime checkout."
-            : "your 7-day free trial starts right away."}
+          We sent a confirmation link to {values.email}. Open it and we’ll take you straight to
+          {isLifetime ? " the lifetime checkout." : " choosing your plan."}
         </p>
       </main>
     );
@@ -132,16 +137,20 @@ function AuthPage() {
       <Logo to="/" />
       <h1 className="mt-6 text-3xl font-bold">
         {mode === "signup"
-          ? isLifetime
-            ? "Claim $1 lifetime access"
-            : "Start your 7-day trial"
+          ? fromDemo
+            ? "One more step."
+            : isLifetime
+              ? "Claim lifetime access"
+              : "Create your account"
           : "Welcome back"}
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {mode === "signup"
-          ? isLifetime
-            ? "Create your account, then complete the one-time $1 checkout. No trial or renewal."
-            : "Every brand deal, warmup window and post count in one daily checklist."
+          ? fromDemo
+            ? "Create your account and we'll bring this collab with you, nothing to re-enter."
+            : isLifetime
+              ? "Create your account, then complete the one-time lifetime checkout. No renewals."
+              : "Every brand deal, warmup window and post count in one daily checklist."
           : "Pick up today's checklist where you left off."}
       </p>
 
@@ -205,9 +214,7 @@ function AuthPage() {
           {busy
             ? "Please wait…"
             : mode === "signup"
-              ? isLifetime
-                ? "Create account and continue"
-                : "Create account"
+              ? "Create account and continue"
               : "Sign in"}
         </Button>
       </form>
