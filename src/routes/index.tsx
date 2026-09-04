@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, MessageSquareDot, TrendingUp } from "lucide-react";
 import { OfferCountdown } from "@/components/OfferCountdown";
 import { Logo } from "@/components/Logo";
-import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
+import { LIFETIME_PRICE_USD } from "@/lib/canvas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
