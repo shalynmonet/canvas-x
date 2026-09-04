@@ -46,11 +46,21 @@ export function CollabForm({
   rates,
   onSaved,
   onCancel,
+  onPreview,
+  submitLabel,
+  footerNote,
 }: {
   collab?: Collab;
   rates?: PlatformRate[];
   onSaved: (id: string) => void;
   onCancel?: () => void;
+  /** When set, the form never touches the database — it hands the entered data back instead. */
+  onPreview?: (
+    fields: DemoCollabFields,
+    platformRates: Record<string, number>,
+  ) => void;
+  submitLabel?: string;
+  footerNote?: string;
 }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
