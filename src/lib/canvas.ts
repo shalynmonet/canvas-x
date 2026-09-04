@@ -282,19 +282,12 @@ export function collabDayState(
   return "empty";
 }
 
+/** Paid access only — there is no free trial. */
 export function hasAccess(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
-  if (profile.subscription_status === "active") return true;
-  if (profile.subscription_status === "lifetime") return true;
   return (
-    profile.subscription_status === "trialing" &&
-    new Date(profile.trial_ends_at).getTime() > Date.now()
+    profile.subscription_status === "active" || profile.subscription_status === "lifetime"
   );
-}
-
-export function trialDaysLeft(profile: Profile): number {
-  const ms = new Date(profile.trial_ends_at).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / 86_400_000));
 }
 
 export function money(n: number): string {
