@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { confirmCheckout } from "@/lib/billing.functions";
+import { importDemoCollab } from "@/lib/demo-import";
 
 export const Route = createFileRoute("/billing/return")({
   ssr: false,
