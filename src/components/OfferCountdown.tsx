@@ -22,11 +22,13 @@ export function OfferCountdown({ className = "" }: { className?: string }) {
     <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${className}`}>
       {live ? (
         <>
-          <span className="text-accent">$1 lifetime ends in</span>{" "}
+          <span className="text-accent">${LIFETIME_PRICE_USD} lifetime ends in</span>{" "}
           <span className="font-mono tabular-nums text-foreground">{formatCountdown(msLeft)}</span>
         </>
       ) : (
-        <span className="text-muted-foreground">$1 lifetime offer has ended</span>
+        <span className="text-muted-foreground">
+          ${LIFETIME_PRICE_USD} lifetime offer has ended
+        </span>
       )}
     </p>
   );
