@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { OfferCountdown, useOfferCountdown } from "@/components/OfferCountdown";
 import { createCheckoutSession } from "@/lib/billing.functions";
-import { LIFETIME_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
+import { LIFETIME_PRICE_USD, MONTHLY_PRICE_USD, YEARLY_PRICE_USD } from "@/lib/canvas";
+import { readDemoCollab } from "@/lib/demo-collab";
 
-type Plan = "yearly" | "lifetime";
+type Plan = "monthly" | "yearly" | "lifetime";
 
 export function UpgradeButton({
-  label = "Upgrade to continue",
+  label = "Continue",
   plan = "yearly",
   variant = "default",
   autoStart = false,
@@ -66,7 +67,7 @@ export function UpgradeButton({
 const perks = [
   "Unlimited collabs with calibrated defaults",
   "Daily warmup, engagement and post checklists",
-  "15-day view logging with live earnings estimates",
+  "Cycle view logging with live earnings estimates",
   "Accountability emails from the reminder agent",
 ];
 
@@ -78,10 +79,8 @@ export function PlanOptions() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("start") !== "1") return;
     const plan = params.get("plan");
-    if (plan === "lifetime" || plan === "yearly") setAutoPlan(plan);
+    if (plan === "lifetime" || plan === "yearly" || plan === "monthly") setAutoPlan(plan);
   }, []);
-
-
 
   return (
     <div className="space-y-4">
@@ -90,12 +89,11 @@ export function PlanOptions() {
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-lg font-semibold">${LIFETIME_PRICE_USD} lifetime</h2>
             <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
-              Today only
+              Limited time
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            One payment, forever access. No trial needed, no renewals — but only until the
-            countdown hits zero.
+            Limited time: ${LIFETIME_PRICE_USD} lifetime access, no renewals, ever.
           </p>
           <OfferCountdown />
           <UpgradeButton
@@ -108,14 +106,23 @@ export function PlanOptions() {
 
       <section className="card-surface space-y-3 p-5 text-left">
         <h2 className="text-lg font-semibold">${YEARLY_PRICE_USD}/year</h2>
-        <p className="text-sm text-muted-foreground">
-          Start with a 7-day free trial, then ${YEARLY_PRICE_USD}/year. Cancel anytime.
-        </p>
+        <p className="text-sm text-muted-foreground">Save over paying monthly.</p>
         <UpgradeButton
           plan="yearly"
           autoStart={autoPlan === "yearly"}
           variant={live ? "outline" : "default"}
-          label={`Start trial — $${YEARLY_PRICE_USD}/year`}
+          label={`Choose yearly — $${YEARLY_PRICE_USD}/year`}
+        />
+      </section>
+
+      <section className="card-surface space-y-3 p-5 text-left">
+        <h2 className="text-lg font-semibold">${MONTHLY_PRICE_USD}/month</h2>
+        <p className="text-sm text-muted-foreground">Cancel anytime.</p>
+        <UpgradeButton
+          plan="monthly"
+          autoStart={autoPlan === "monthly"}
+          variant="outline"
+          label={`Choose monthly — $${MONTHLY_PRICE_USD}/month`}
         />
       </section>
     </div>
@@ -123,16 +130,21 @@ export function PlanOptions() {
 }
 
 export function Paywall() {
+  const [hasDemo, setHasDemo] = useState(false);
+  useEffect(() => setHasDemo(readDemoCollab() !== null), []);
+
   return (
     <div className="mx-auto max-w-md space-y-6 py-10 text-center">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-        Choose your plan
+        Pick what fits
       </p>
-      <h1 className="text-3xl font-bold">Keep every collab on track</h1>
-      <p className="text-sm text-muted-foreground">
-        Your free trial covers the first 7 days. After that, ${YEARLY_PRICE_USD}/year — or just
-        ${LIFETIME_PRICE_USD} for lifetime access while the launch offer is live.
-      </p>
+      <h1 className="text-3xl font-bold">Choose your plan</h1>
+      {hasDemo && (
+        <p className="text-sm text-muted-foreground">
+          Your collab is saved and waiting — it lands in your dashboard the moment payment
+          clears, nothing to re-enter.
+        </p>
+      )}
       <ul className="card-surface space-y-2 p-5 text-left text-sm">
         {perks.map((perk) => (
           <li key={perk}>{perk}</li>

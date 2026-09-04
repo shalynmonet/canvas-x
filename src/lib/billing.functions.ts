@@ -27,14 +27,20 @@ async function stripe(path: string, body?: Record<string, string>) {
   return json;
 }
 
-/** Creates a Stripe Checkout session: $14/yr subscription, or $1 lifetime while the offer runs. */
+const PRICE_IDS = {
+  monthly: "price_1UBPrpI6kyrZOaksHsml1ztp",
+  yearly: "price_1UBPrJI6kyrZOaksu61wwtSf",
+  lifetime: "price_1UBPsEI6kyrZOakswY4YHkN3",
+} as const;
+
+/** Creates a Stripe Checkout session: $9/mo, $44/yr, or $44 lifetime while the launch offer runs. */
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
         origin: z.string().url(),
-        plan: z.enum(["yearly", "lifetime"]).default("yearly"),
+        plan: z.enum(["monthly", "yearly", "lifetime"]).default("yearly"),
       })
       .parse(input),
   )
@@ -59,16 +65,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const lifetime = data.plan === "lifetime";
     if (lifetime && Date.now() >= new Date(LIFETIME_OFFER_ENDS_AT).getTime()) {
-      throw new Error("The $1 lifetime offer has expired");
+      throw new Error("The lifetime offer has expired");
     }
 
     const base: Record<string, string> = {
       customer: customerId,
       "line_items[0][quantity]": "1",
-      "line_items[0][price_data][currency]": "usd",
+      "line_items[0][price]": PRICE_IDS[data.plan],
       client_reference_id: userId,
       success_url: `${data.origin}/billing/return?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${data.origin}/upgrade`,
+      "metadata[plan]": data.plan,
     };
 
     const session = await stripe(
@@ -77,20 +84,12 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         ? {
             ...base,
             mode: "payment",
-            "line_items[0][price_data][unit_amount]": "100",
-            "line_items[0][price_data][product_data][name]": "CanvOps Lifetime Access",
             "payment_intent_data[metadata][user_id]": userId,
-            "metadata[plan]": "lifetime",
           }
         : {
             ...base,
             mode: "subscription",
-            "line_items[0][price_data][unit_amount]": "1400",
-            "line_items[0][price_data][recurring][interval]": "year",
-            "line_items[0][price_data][product_data][name]": "CanvOps Pro (yearly)",
-            "subscription_data[trial_period_days]": "7",
             "subscription_data[metadata][user_id]": userId,
-            "metadata[plan]": "yearly",
           },
     );
 

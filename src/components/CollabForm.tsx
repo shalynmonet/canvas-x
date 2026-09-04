@@ -16,6 +16,7 @@ import {
   type Collab,
   type PlatformRate,
 } from "@/lib/canvas";
+import type { DemoCollabFields } from "@/lib/demo-collab";
 
 const schema = z.object({
   brand_name: z.string().trim().min(1, "Brand name is required").max(80),
@@ -46,11 +47,21 @@ export function CollabForm({
   rates,
   onSaved,
   onCancel,
+  onPreview,
+  submitLabel,
+  footerNote,
 }: {
   collab?: Collab;
   rates?: PlatformRate[];
   onSaved: (id: string) => void;
   onCancel?: () => void;
+  /** When set, the form never touches the database — it hands the entered data back instead. */
+  onPreview?: (
+    fields: DemoCollabFields,
+    platformRates: Record<string, number>,
+  ) => void;
+  submitLabel?: string;
+  footerNote?: string;
 }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -89,6 +100,10 @@ export function CollabForm({
     const parsed = schema.safeParse(payload);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Check the form");
+      return;
+    }
+    if (onPreview) {
+      onPreview(parsed.data as DemoCollabFields, platformRates);
       return;
     }
     setBusy(true);
@@ -456,8 +471,9 @@ export function CollabForm({
       </p>
 
       <div className="space-y-2">
+        {footerNote && <p className="text-xs text-muted-foreground">{footerNote}</p>}
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? "Saving…" : collab ? "Save changes" : "Add collab"}
+          {busy ? "Saving…" : (submitLabel ?? (collab ? "Save changes" : "Add collab"))}
         </Button>
         {onCancel && (
           <Button

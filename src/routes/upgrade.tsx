@@ -10,7 +10,7 @@ export const Route = createFileRoute("/upgrade")({
       {
         name: "description",
         content:
-          "Choose your CanvOps plan: a 7-day free trial then $14/year, or just $1 for lifetime access while the launch offer lasts.",
+          "Choose your CanvOps plan: $9/month, $44/year, or $44 lifetime access while the launch offer lasts.",
       },
       { property: "og:title", content: "CanvOps plans — $14/year, or $1 lifetime today" },
       {

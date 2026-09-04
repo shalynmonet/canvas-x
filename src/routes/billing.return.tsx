@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { confirmCheckout } from "@/lib/billing.functions";
+import { importDemoCollab } from "@/lib/demo-import";
 
 export const Route = createFileRoute("/billing/return")({
   ssr: false,
@@ -41,7 +42,18 @@ function BillingReturn() {
         await queryClient.invalidateQueries({ queryKey: ["profile"] });
         if (result.unlocked) {
           setMessage("Payment confirmed — unlocking CanvOps…");
-          navigate({ to: "/home", replace: true });
+          let demoId: string | null = null;
+          try {
+            demoId = await importDemoCollab();
+            if (demoId) await queryClient.invalidateQueries({ queryKey: ["collabs"] });
+          } catch {
+            // If the demo collab can't be imported, still let them into the app.
+          }
+          if (demoId) {
+            navigate({ to: "/collabs/$id", params: { id: demoId }, replace: true });
+          } else {
+            navigate({ to: "/home", replace: true });
+          }
         } else {
           setMessage("Stripe hasn't confirmed this payment yet. Try again in a moment.");
         }

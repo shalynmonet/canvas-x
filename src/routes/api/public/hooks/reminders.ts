@@ -157,8 +157,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           const active =
             profile.subscription_status === "active" ||
             profile.subscription_status === "lifetime" ||
-            (profile.subscription_status === "trialing" &&
-              new Date(profile.trial_ends_at).getTime() > now.getTime());
+            false;
           if (!active) continue;
 
           const { data: collabs } = await db

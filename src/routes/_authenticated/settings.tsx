@@ -13,7 +13,6 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-canvas";
 import { syncSubscription } from "@/lib/billing.functions";
-import { trialDaysLeft } from "@/lib/canvas";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -206,8 +205,6 @@ function SettingsScreen() {
                   ? "active (yearly)"
                   : profile.subscription_status}
             </span>
-            {profile.subscription_status === "trialing" &&
-              ` — ${trialDaysLeft(profile)} day(s) of trial left`}
           </p>
         )}
         {profile?.subscription_status !== "active" &&

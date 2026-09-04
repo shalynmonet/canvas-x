@@ -116,12 +116,15 @@ export const PAY_FREQUENCIES: PayFrequency[] = [
 ];
 
 export const MONTHLY_PRICE_USD = 9;
-/** Standard yearly subscription price after the 7-day trial. */
-export const YEARLY_PRICE_USD = 14;
+/** Yearly subscription price. */
+export const YEARLY_PRICE_USD = 44;
 /** Launch-offer lifetime price. */
-export const LIFETIME_PRICE_USD = 1;
+export const LIFETIME_PRICE_USD = 44;
 
-/** Lifetime offer deadline: 11:59pm Central on September 14, 2026 (CDT, UTC-5). */
+/**
+ * Lifetime offer runs for 14 days from launch — ends 11:59pm Central
+ * on September 14, 2026 (CDT, UTC-5).
+ */
 export const LIFETIME_OFFER_ENDS_AT = "2026-09-15T04:59:00Z";
 
 export function lifetimeOfferMsLeft(now: number = Date.now()): number {
@@ -279,19 +282,12 @@ export function collabDayState(
   return "empty";
 }
 
+/** Paid access only — there is no free trial. */
 export function hasAccess(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
-  if (profile.subscription_status === "active") return true;
-  if (profile.subscription_status === "lifetime") return true;
   return (
-    profile.subscription_status === "trialing" &&
-    new Date(profile.trial_ends_at).getTime() > Date.now()
+    profile.subscription_status === "active" || profile.subscription_status === "lifetime"
   );
-}
-
-export function trialDaysLeft(profile: Profile): number {
-  const ms = new Date(profile.trial_ends_at).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / 86_400_000));
 }
 
 export function money(n: number): string {
