@@ -16,6 +16,7 @@ import {
   type Collab,
   type PlatformRate,
 } from "@/lib/canvas";
+import type { DemoCollabFields } from "@/lib/demo-collab";
 
 const schema = z.object({
   brand_name: z.string().trim().min(1, "Brand name is required").max(80),
