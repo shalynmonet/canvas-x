@@ -102,6 +102,10 @@ export function CollabForm({
       toast.error(parsed.error.issues[0]?.message ?? "Check the form");
       return;
     }
+    if (onPreview) {
+      onPreview(parsed.data as DemoCollabFields, platformRates);
+      return;
+    }
     setBusy(true);
     try {
       const { data: auth } = await supabase.auth.getUser();
