@@ -471,8 +471,9 @@ export function CollabForm({
       </p>
 
       <div className="space-y-2">
+        {footerNote && <p className="text-xs text-muted-foreground">{footerNote}</p>}
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? "Saving…" : collab ? "Save changes" : "Add collab"}
+          {busy ? "Saving…" : (submitLabel ?? (collab ? "Save changes" : "Add collab"))}
         </Button>
         {onCancel && (
           <Button
