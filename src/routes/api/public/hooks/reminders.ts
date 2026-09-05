@@ -27,8 +27,8 @@ interface ProfileRow {
   trial_ends_at: string;
 }
 
-const FROM_ADDRESS = "Canvas <reminders@alerts.canvops.com>";
-const SUBJECT = "Canvas: you've got unfinished tasks today";
+const FROM_ADDRESS = "CanvOps <reminders@alerts.canvops.com>";
+const SUBJECT = "CanvOps: you've got unfinished tasks today";
 
 function minutesOfDay(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -231,7 +231,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           }
 
           const result = await sendReminderEmail(email, profile.name, incomplete, appUrl);
-          const summary = `Canvas email reminder: ${incomplete.join("; ")}`;
+          const summary = `CanvOps email reminder: ${incomplete.join("; ")}`;
           await db.from("reminder_logs").insert({
             user_id: profile.id,
             collab_ids_flagged: flagged.join(","),
