@@ -231,7 +231,7 @@ export const Route = createFileRoute("/api/public/hooks/reminders")({
           }
 
           const result = await sendReminderEmail(email, profile.name, incomplete, appUrl);
-          const summary = `Canvas email reminder: ${incomplete.join("; ")}`;
+          const summary = `CanvOps email reminder: ${incomplete.join("; ")}`;
           await db.from("reminder_logs").insert({
             user_id: profile.id,
             collab_ids_flagged: flagged.join(","),
